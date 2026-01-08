@@ -753,9 +753,9 @@ tr:hover {
     font-size: 1.2em;
   }
 
-  .back-btn,
-  .delete-btn,
-  .primary-btn {
+  .view-header .back-btn,
+  .view-header .delete-btn,
+  .view-header .primary-btn {
     padding: 0.4em 0.8em;
     font-size: 0.85rem;
     width: 100%;
@@ -785,5 +785,11 @@ tr:hover {
   th,
   td {
     padding: 0.4rem;
+  }
+
+  .list-item .delete-btn {
+    padding: 0.4em 0.8em;
+    font-size: 0.85rem;
+    width: auto;
   }
 }
