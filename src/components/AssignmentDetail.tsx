@@ -1,10 +1,13 @@
-import type { Student, Assignment, Grade } from '../types';
+import { useState } from 'react';
+import type { Student, Assignment, Grade, GradeItem } from '../types';
+import { generateId } from '../utils';
 
 interface AssignmentDetailProps {
   assignment: Assignment;
   students: Student[];
   grades: Grade[];
   onUpdateGrade: (studentId: string, assignmentId: string, itemId: string, points: number) => void;
+  onUpdateAssignment: (assignment: Assignment, deletedItemIds: string[]) => void;
   onBack: () => void;
   onDelete: () => void;
 }
@@ -14,9 +17,87 @@ export function AssignmentDetail({
   students,
   grades,
   onUpdateGrade,
+  onUpdateAssignment,
   onBack,
   onDelete,
 }: AssignmentDetailProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(assignment.name);
+  const [editedItems, setEditedItems] = useState<GradeItem[]>(assignment.items);
+
+  const handleStartEdit = () => {
+    setEditedName(assignment.name);
+    setEditedItems([...assignment.items]);
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editedName.trim()) {
+      alert('Assignment name cannot be empty');
+      return;
+    }
+
+    const validItems = editedItems.filter(item => item.name.trim() && item.maxPoints > 0);
+    if (validItems.length === 0) {
+      alert('Assignment must have at least one valid item');
+      return;
+    }
+
+    const newItemIds = new Set(validItems.map(item => item.id));
+    const deletedItemIds = assignment.items
+      .filter(item => !newItemIds.has(item.id))
+      .map(item => item.id);
+
+    const updatedAssignment: Assignment = {
+      ...assignment,
+      name: editedName.trim(),
+      items: validItems
+    };
+
+    onUpdateAssignment(updatedAssignment, deletedItemIds);
+    setIsEditing(false);
+  };
+
+  const handleAddItem = () => {
+    setEditedItems([...editedItems, { id: generateId(), name: '', maxPoints: 0 }]);
+  };
+
+  const handleRemoveItem = (index: number) => {
+    if (editedItems.length === 1) {
+      alert('Assignment must have at least one item');
+      return;
+    }
+    setEditedItems(editedItems.filter((_, i) => i !== index));
+  };
+
+  const handleItemChange = (index: number, field: 'name' | 'maxPoints', value: string | number) => {
+    const updated = [...editedItems];
+    if (field === 'name') {
+      updated[index].name = value as string;
+    } else {
+      updated[index].maxPoints = typeof value === 'string' ? Number(value) : value;
+    }
+    setEditedItems(updated);
+  };
+
+  const handleMoveItemUp = (index: number) => {
+    if (index === 0) return;
+    const updated = [...editedItems];
+    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    setEditedItems(updated);
+  };
+
+  const handleMoveItemDown = (index: number) => {
+    if (index === editedItems.length - 1) return;
+    const updated = [...editedItems];
+    [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+    setEditedItems(updated);
+  };
+
   const getGrade = (studentId: string, itemId: string): number => {
     const grade = grades.find((g) => g.studentId === studentId && g.assignmentId === assignment.id);
     return grade?.itemGrades[itemId] ?? 0;
@@ -121,12 +202,102 @@ export function AssignmentDetail({
           ← Back to Assignments
         </button>
         <h2>{assignment.name}</h2>
-        <button onClick={onDelete} className="delete-btn">
-          Delete Assignment
-        </button>
+        <div className="header-actions">
+          {!isEditing && (
+            <>
+              <button onClick={handleStartEdit} className="secondary-btn">
+                Edit Assignment
+              </button>
+              <button onClick={onDelete} className="delete-btn">
+                Delete
+              </button>
+            </>
+          )}
+          {isEditing && (
+            <>
+              <button onClick={handleSaveEdit} className="primary-btn">
+                Save Changes
+              </button>
+              <button onClick={handleCancelEdit} className="secondary-btn">
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="detail-sections">
+      {isEditing && (
+        <div className="edit-section">
+          <h3>Edit Assignment</h3>
+          <div className="form-group">
+            <label>Assignment Name</label>
+            <input
+              type="text"
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              className="input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Items</label>
+            <div className="edit-items-list">
+              {editedItems.map((item, index) => (
+                <div key={item.id} className="edit-item-row">
+                  <div className="reorder-buttons">
+                    <button
+                      type="button"
+                      onClick={() => handleMoveItemUp(index)}
+                      disabled={index === 0}
+                      className="reorder-btn"
+                      title="Move up"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMoveItemDown(index)}
+                      disabled={index === editedItems.length - 1}
+                      className="reorder-btn"
+                      title="Move down"
+                    >
+                      ↓
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={item.name}
+                    onChange={(e) => handleItemChange(index, 'name', e.target.value)}
+                    placeholder="Item name"
+                    className="input"
+                  />
+                  <input
+                    type="number"
+                    value={item.maxPoints || ''}
+                    onChange={(e) => handleItemChange(index, 'maxPoints', e.target.value)}
+                    placeholder="Max points"
+                    className="input small"
+                    min="0"
+                    step="0.01"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem(index)}
+                    className="delete-btn small"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={handleAddItem} className="secondary-btn">
+                Add Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!isEditing && <div className="detail-sections">
         <section className="grades-section">
           <h3>Student Grades</h3>
           <div className="grades-table">
@@ -208,7 +379,7 @@ export function AssignmentDetail({
             })}
           </div>
         </section>
-      </div>
+      </div>}
     </div>
   );
 }

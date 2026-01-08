@@ -75,6 +75,23 @@ function App() {
     }
   };
 
+  const handleUpdateAssignment = (updatedAssignment: Assignment, deletedItemIds: string[]) => {
+    setAssignments(assignments.map(a => a.id === updatedAssignment.id ? updatedAssignment : a));
+
+    if (deletedItemIds.length > 0) {
+      setGrades(grades.map(grade => {
+        if (grade.assignmentId === updatedAssignment.id) {
+          const updatedItemGrades = { ...grade.itemGrades };
+          deletedItemIds.forEach(itemId => {
+            delete updatedItemGrades[itemId];
+          });
+          return { ...grade, itemGrades: updatedItemGrades };
+        }
+        return grade;
+      }));
+    }
+  };
+
   const selectedAssignment = selectedAssignmentId
     ? assignments.find((a) => a.id === selectedAssignmentId)
     : null;
@@ -95,6 +112,7 @@ function App() {
             students={students}
             grades={grades}
             onUpdateGrade={handleUpdateGrade}
+            onUpdateAssignment={handleUpdateAssignment}
             onBack={() => setSelectedAssignmentId(null)}
             onDelete={() => handleDeleteAssignment(selectedAssignment.id)}
           />
