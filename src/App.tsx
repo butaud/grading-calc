@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Student, Assignment, Grade, GradeItem, LetterGrade } from './types';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from './utils';
@@ -16,6 +16,38 @@ function App() {
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAssignment, setShowAddAssignment] = useState(false);
+
+  // Read hash on initial load
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // Remove the # character
+    if (hash && assignments.find(a => a.id === hash)) {
+      setSelectedAssignmentId(hash);
+    }
+  }, [assignments]);
+
+  // Update hash when selected assignment changes
+  useEffect(() => {
+    if (selectedAssignmentId) {
+      window.location.hash = selectedAssignmentId;
+    } else {
+      window.location.hash = '';
+    }
+  }, [selectedAssignmentId]);
+
+  // Listen for browser back/forward navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      if (hash && assignments.find(a => a.id === hash)) {
+        setSelectedAssignmentId(hash);
+      } else {
+        setSelectedAssignmentId(null);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [assignments]);
 
   const handleAddStudent = (name: string) => {
     const newStudent: Student = {
