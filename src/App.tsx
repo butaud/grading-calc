@@ -21,6 +21,45 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAssignment, setShowAddAssignment] = useState(false);
 
+  // Handle import on initial load
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const importData = params.get('import');
+
+    if (importData) {
+      try {
+        const decoded = atob(importData);
+        const data = JSON.parse(decoded);
+
+        // Check if there's existing local data
+        const hasExistingData = students.length > 0 || assignments.length > 0 || grades.length > 0 || letterGrades.length > 0;
+
+        if (hasExistingData) {
+          if (confirm('You have existing data. Do you want to overwrite it with the imported data? This cannot be undone.')) {
+            importAllData(data);
+          }
+        } else {
+          importAllData(data);
+        }
+
+        // Remove import parameter from URL
+        params.delete('import');
+        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '') + window.location.hash;
+        window.history.replaceState({}, '', newUrl);
+      } catch (e) {
+        alert('Failed to import data. The import link may be invalid or corrupted.');
+        console.error('Import error:', e);
+      }
+    }
+  }, []); // Only run once on mount
+
+  const importAllData = (data: any) => {
+    if (data.students) setStudents(data.students);
+    if (data.assignments) setAssignments(data.assignments);
+    if (data.grades) setGrades(data.grades);
+    if (data.letterGrades) setLetterGrades(data.letterGrades);
+  };
+
   // Validate hash on initial load and clear if invalid
   useEffect(() => {
     const hash = window.location.hash.slice(1);
@@ -137,6 +176,27 @@ function App() {
     }
   };
 
+  const handleExportData = () => {
+    const exportData = {
+      students,
+      assignments,
+      grades,
+      letterGrades
+    };
+
+    const json = JSON.stringify(exportData);
+    const encoded = btoa(json);
+    const exportUrl = `${window.location.origin}${window.location.pathname}?import=${encoded}`;
+
+    // Create a temporary link element to copy to clipboard
+    navigator.clipboard.writeText(exportUrl).then(() => {
+      alert('Export link copied to clipboard! Share this link to import your data in another browser.');
+    }).catch(() => {
+      // Fallback if clipboard API fails - show the URL in a prompt
+      prompt('Copy this link to import your data in another browser:', exportUrl);
+    });
+  };
+
   const selectedAssignment = selectedAssignmentId
     ? assignments.find((a) => a.id === selectedAssignmentId)
     : null;
@@ -178,6 +238,7 @@ function App() {
           onAddStudent={handleAddStudent}
           onDeleteStudent={handleDeleteStudent}
           onUpdateLetterGrades={setLetterGrades}
+          onExportData={handleExportData}
           onClose={() => setShowSettings(false)}
         />
       )}

@@ -9,11 +9,12 @@ interface SettingsProps {
   onAddStudent: (name: string) => void;
   onDeleteStudent: (id: string) => void;
   onUpdateLetterGrades: (letterGrades: LetterGrade[]) => void;
+  onExportData: () => void;
   onClose: () => void;
 }
 
-export function Settings({ students, letterGrades, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onClose }: SettingsProps) {
-  const [activeTab, setActiveTab] = useState<'students' | 'letterGrades'>('students');
+export function Settings({ students, letterGrades, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onExportData, onClose }: SettingsProps) {
+  const [activeTab, setActiveTab] = useState<'students' | 'letterGrades' | 'export'>('students');
 
   return (
     <div className="settings-overlay">
@@ -38,6 +39,12 @@ export function Settings({ students, letterGrades, onAddStudent, onDeleteStudent
           >
             Letter Grades
           </button>
+          <button
+            className={activeTab === 'export' ? 'settings-tab active' : 'settings-tab'}
+            onClick={() => setActiveTab('export')}
+          >
+            Export
+          </button>
         </nav>
 
         <div className="settings-content">
@@ -54,6 +61,19 @@ export function Settings({ students, letterGrades, onAddStudent, onDeleteStudent
               letterGrades={letterGrades}
               onUpdateLetterGrades={onUpdateLetterGrades}
             />
+          )}
+
+          {activeTab === 'export' && (
+            <div className="section">
+              <h2>Export Data</h2>
+              <p className="hint">
+                Export all your data (students, assignments, grades, and letter grades) as a shareable link.
+                You can use this link to import your data into another browser or share it with others.
+              </p>
+              <button onClick={onExportData} className="primary-btn">
+                Generate Export Link
+              </button>
+            </div>
           )}
         </div>
       </div>
