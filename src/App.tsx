@@ -176,32 +176,6 @@ function App() {
     }
   };
 
-  const handleExportData = () => {
-    const exportData = {
-      students,
-      assignments,
-      grades,
-      letterGrades
-    };
-
-    const json = JSON.stringify(exportData);
-    const encoded = btoa(json);
-    const exportUrl = `${window.location.origin}${window.location.pathname}?import=${encoded}`;
-
-    // Try to copy to clipboard, fallback to prompt if it fails
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(exportUrl).then(() => {
-        alert('Export link copied to clipboard! Share this link to import your data in another browser.');
-      }).catch((err) => {
-        console.error('Clipboard write failed:', err);
-        prompt('Copy this link to import your data in another browser:', exportUrl);
-      });
-    } else {
-      // Fallback if clipboard API is not available (e.g., non-HTTPS)
-      prompt('Copy this link to import your data in another browser:', exportUrl);
-    }
-  };
-
   const selectedAssignment = selectedAssignmentId
     ? assignments.find((a) => a.id === selectedAssignmentId)
     : null;
@@ -239,11 +213,12 @@ function App() {
       {showSettings && (
         <Settings
           students={students}
+          assignments={assignments}
+          grades={grades}
           letterGrades={letterGrades}
           onAddStudent={handleAddStudent}
           onDeleteStudent={handleDeleteStudent}
           onUpdateLetterGrades={setLetterGrades}
-          onExportData={handleExportData}
           onClose={() => setShowSettings(false)}
         />
       )}
