@@ -7,7 +7,7 @@ interface AssignmentDetailProps {
   students: Student[];
   grades: Grade[];
   letterGrades: LetterGrade[];
-  onUpdateGrade: (studentId: string, assignmentId: string, itemId: string, points: number) => void;
+  onUpdateGrade: (studentId: string, assignmentId: string, itemId: string, points: number | null) => void;
   onUpdateAssignment: (assignment: Assignment, deletedItemIds: string[]) => void;
   onBack: () => void;
   onDelete: () => void;
@@ -106,9 +106,13 @@ export function AssignmentDetail({
   };
 
   const handleGradeChange = (studentId: string, itemId: string, value: string) => {
-    const points = value === '' ? 0 : Number(value);
-    if (!isNaN(points)) {
-      onUpdateGrade(studentId, assignment.id, itemId, points);
+    if (value === '') {
+      onUpdateGrade(studentId, assignment.id, itemId, null);
+    } else {
+      const points = Number(value);
+      if (!isNaN(points)) {
+        onUpdateGrade(studentId, assignment.id, itemId, points);
+      }
     }
   };
 

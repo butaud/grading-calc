@@ -49,22 +49,29 @@ function App() {
     }
   };
 
-  const handleUpdateGrade = (studentId: string, assignmentId: string, itemId: string, points: number) => {
+  const handleUpdateGrade = (studentId: string, assignmentId: string, itemId: string, points: number | null) => {
     const existingGradeIndex = grades.findIndex(
       (g) => g.studentId === studentId && g.assignmentId === assignmentId
     );
 
     if (existingGradeIndex >= 0) {
       const updatedGrades = [...grades];
+      const updatedItemGrades = { ...updatedGrades[existingGradeIndex].itemGrades };
+
+      if (points === null) {
+        // Delete the item grade if points is null
+        delete updatedItemGrades[itemId];
+      } else {
+        updatedItemGrades[itemId] = points;
+      }
+
       updatedGrades[existingGradeIndex] = {
         ...updatedGrades[existingGradeIndex],
-        itemGrades: {
-          ...updatedGrades[existingGradeIndex].itemGrades,
-          [itemId]: points
-        }
+        itemGrades: updatedItemGrades
       };
       setGrades(updatedGrades);
-    } else {
+    } else if (points !== null) {
+      // Only create new grade if points is not null
       const newGrade: Grade = {
         studentId,
         assignmentId,
