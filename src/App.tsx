@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Student, Assignment, Grade, PointContributor } from './types';
 import { useLocalStorage } from './useLocalStorage';
+import { generateId } from './utils';
 import { StudentManager } from './components/StudentManager';
 import { AssignmentManager } from './components/AssignmentManager';
 import { GradeEntry } from './components/GradeEntry';
@@ -15,7 +16,7 @@ function App() {
 
   const handleAddStudent = (name: string) => {
     const newStudent: Student = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name
     };
     setStudents([...students, newStudent]);
@@ -28,7 +29,7 @@ function App() {
 
   const handleAddAssignment = (name: string, pointContributors: PointContributor[]) => {
     const newAssignment: Assignment = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name,
       pointContributors
     };

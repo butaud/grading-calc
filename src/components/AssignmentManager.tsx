@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Assignment, PointContributor } from '../types';
+import { generateId } from '../utils';
 
 interface AssignmentManagerProps {
   assignments: Assignment[];
@@ -41,7 +42,7 @@ export function AssignmentManager({ assignments, onAddAssignment, onDeleteAssign
     }
 
     const contributors: PointContributor[] = validContributors.map((pc) => ({
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: pc.name.trim(),
       maxPoints: Number(pc.maxPoints)
     }));
