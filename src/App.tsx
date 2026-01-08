@@ -188,13 +188,18 @@ function App() {
     const encoded = btoa(json);
     const exportUrl = `${window.location.origin}${window.location.pathname}?import=${encoded}`;
 
-    // Create a temporary link element to copy to clipboard
-    navigator.clipboard.writeText(exportUrl).then(() => {
-      alert('Export link copied to clipboard! Share this link to import your data in another browser.');
-    }).catch(() => {
-      // Fallback if clipboard API fails - show the URL in a prompt
+    // Try to copy to clipboard, fallback to prompt if it fails
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(exportUrl).then(() => {
+        alert('Export link copied to clipboard! Share this link to import your data in another browser.');
+      }).catch((err) => {
+        console.error('Clipboard write failed:', err);
+        prompt('Copy this link to import your data in another browser:', exportUrl);
+      });
+    } else {
+      // Fallback if clipboard API is not available (e.g., non-HTTPS)
       prompt('Copy this link to import your data in another browser:', exportUrl);
-    });
+    }
   };
 
   const selectedAssignment = selectedAssignmentId
