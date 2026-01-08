@@ -2,17 +2,19 @@ import { useState } from 'react';
 import type { Student, Assignment, Grade, PointContributor } from './types';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from './utils';
-import { StudentManager } from './components/StudentManager';
-import { AssignmentManager } from './components/AssignmentManager';
-import { GradeEntry } from './components/GradeEntry';
-import { Statistics } from './components/Statistics';
+import { AssignmentList } from './components/AssignmentList';
+import { AssignmentDetail } from './components/AssignmentDetail';
+import { Settings } from './components/Settings';
+import { AddAssignmentModal } from './components/AddAssignmentModal';
 import './App.css';
 
 function App() {
   const [students, setStudents] = useLocalStorage<Student[]>('students', []);
   const [assignments, setAssignments] = useLocalStorage<Assignment[]>('assignments', []);
   const [grades, setGrades] = useLocalStorage<Grade[]>('grades', []);
-  const [activeTab, setActiveTab] = useState<'students' | 'assignments' | 'grades' | 'statistics'>('students');
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAddAssignment, setShowAddAssignment] = useState(false);
 
   const handleAddStudent = (name: string) => {
     const newStudent: Student = {
@@ -37,8 +39,13 @@ function App() {
   };
 
   const handleDeleteAssignment = (id: string) => {
-    setAssignments(assignments.filter((a) => a.id !== id));
-    setGrades(grades.filter((g) => g.assignmentId !== id));
+    if (confirm('Are you sure you want to delete this assignment? All grades for this assignment will be lost.')) {
+      setAssignments(assignments.filter((a) => a.id !== id));
+      setGrades(grades.filter((g) => g.assignmentId !== id));
+      if (selectedAssignmentId === id) {
+        setSelectedAssignmentId(null);
+      }
+    }
   };
 
   const handleUpdateGrade = (studentId: string, assignmentId: string, pointContributorId: string, points: number) => {
@@ -68,69 +75,53 @@ function App() {
     }
   };
 
+  const selectedAssignment = selectedAssignmentId
+    ? assignments.find((a) => a.id === selectedAssignmentId)
+    : null;
+
   return (
     <div className="app">
       <header className="header">
         <h1>Grading Calculator</h1>
+        <button onClick={() => setShowSettings(true)} className="settings-btn">
+          ⚙ Students
+        </button>
       </header>
 
-      <nav className="tabs">
-        <button
-          className={activeTab === 'students' ? 'tab active' : 'tab'}
-          onClick={() => setActiveTab('students')}
-        >
-          Students
-        </button>
-        <button
-          className={activeTab === 'assignments' ? 'tab active' : 'tab'}
-          onClick={() => setActiveTab('assignments')}
-        >
-          Assignments
-        </button>
-        <button
-          className={activeTab === 'grades' ? 'tab active' : 'tab'}
-          onClick={() => setActiveTab('grades')}
-        >
-          Enter Grades
-        </button>
-        <button
-          className={activeTab === 'statistics' ? 'tab active' : 'tab'}
-          onClick={() => setActiveTab('statistics')}
-        >
-          Statistics
-        </button>
-      </nav>
-
       <main className="main">
-        {activeTab === 'students' && (
-          <StudentManager
+        {selectedAssignment ? (
+          <AssignmentDetail
+            assignment={selectedAssignment}
             students={students}
-            onAddStudent={handleAddStudent}
-            onDeleteStudent={handleDeleteStudent}
-          />
-        )}
-
-        {activeTab === 'assignments' && (
-          <AssignmentManager
-            assignments={assignments}
-            onAddAssignment={handleAddAssignment}
-            onDeleteAssignment={handleDeleteAssignment}
-          />
-        )}
-
-        {activeTab === 'grades' && (
-          <GradeEntry
-            students={students}
-            assignments={assignments}
             grades={grades}
             onUpdateGrade={handleUpdateGrade}
+            onBack={() => setSelectedAssignmentId(null)}
+            onDelete={() => handleDeleteAssignment(selectedAssignment.id)}
+          />
+        ) : (
+          <AssignmentList
+            assignments={assignments}
+            onSelectAssignment={setSelectedAssignmentId}
+            onAddAssignment={() => setShowAddAssignment(true)}
           />
         )}
-
-        {activeTab === 'statistics' && (
-          <Statistics students={students} assignments={assignments} grades={grades} />
-        )}
       </main>
+
+      {showSettings && (
+        <Settings
+          students={students}
+          onAddStudent={handleAddStudent}
+          onDeleteStudent={handleDeleteStudent}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+
+      {showAddAssignment && (
+        <AddAssignmentModal
+          onAddAssignment={handleAddAssignment}
+          onClose={() => setShowAddAssignment(false)}
+        />
+      )}
     </div>
   );
 }
