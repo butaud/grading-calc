@@ -13,15 +13,20 @@ function App() {
   const [assignments, setAssignments] = useLocalStorage<Assignment[]>('assignments', []);
   const [grades, setGrades] = useLocalStorage<Grade[]>('grades', []);
   const [letterGrades, setLetterGrades] = useLocalStorage<LetterGrade[]>('letterGrades', []);
-  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(() => {
+    // Initialize with hash if present
+    const hash = window.location.hash.slice(1);
+    return hash || null;
+  });
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAssignment, setShowAddAssignment] = useState(false);
 
-  // Read hash on initial load
+  // Validate hash on initial load and clear if invalid
   useEffect(() => {
-    const hash = window.location.hash.slice(1); // Remove the # character
-    if (hash && assignments.find(a => a.id === hash)) {
-      setSelectedAssignmentId(hash);
+    const hash = window.location.hash.slice(1);
+    if (hash && !assignments.find(a => a.id === hash)) {
+      // Hash exists but assignment doesn't - clear it
+      setSelectedAssignmentId(null);
     }
   }, [assignments]);
 
