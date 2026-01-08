@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import type { Student, Assignment, Grade, GradeItem } from '../types';
-import { generateId } from '../utils';
+import type { Student, Assignment, Grade, GradeItem, LetterGrade } from '../types';
+import { generateId, getLetterGrade } from '../utils';
 
 interface AssignmentDetailProps {
   assignment: Assignment;
   students: Student[];
   grades: Grade[];
+  letterGrades: LetterGrade[];
   onUpdateGrade: (studentId: string, assignmentId: string, itemId: string, points: number) => void;
   onUpdateAssignment: (assignment: Assignment, deletedItemIds: string[]) => void;
   onBack: () => void;
@@ -16,6 +17,7 @@ export function AssignmentDetail({
   assignment,
   students,
   grades,
+  letterGrades,
   onUpdateGrade,
   onUpdateAssignment,
   onBack,
@@ -327,6 +329,7 @@ export function AssignmentDetail({
                   });
 
                   const percentage = studentMax > 0 ? (total / studentMax) * 100 : 0;
+                  const letterGrade = getLetterGrade(percentage, letterGrades);
 
                   return (
                     <tr key={student.id}>
@@ -345,7 +348,7 @@ export function AssignmentDetail({
                         </td>
                       ))}
                       <td className="total-cell">
-                        {total.toFixed(2)} / {studentMax > 0 ? studentMax : maxTotal} ({percentage.toFixed(1)}%)
+                        {total.toFixed(2)} / {studentMax > 0 ? studentMax : maxTotal} ({percentage.toFixed(1)}%{letterGrade ? `, ${letterGrade}` : ''})
                       </td>
                     </tr>
                   );
@@ -360,7 +363,14 @@ export function AssignmentDetail({
           <div className="stats-grid">
             <div className="stat-card overall">
               <div className="stat-label">Overall Average</div>
-              <div className="stat-value">{calculatePercentage().toFixed(1)}%</div>
+              <div className="stat-value">
+                {calculatePercentage().toFixed(1)}%
+                {letterGrades.length > 0 && (() => {
+                  const overallPercentage = calculatePercentage();
+                  const letterGrade = getLetterGrade(overallPercentage, letterGrades);
+                  return letterGrade ? ` (${letterGrade})` : '';
+                })()}
+              </div>
             </div>
 
             {assignment.items.map((item) => {

@@ -563,6 +563,76 @@ tr:hover {
   flex: 1;
 }
 
+/* Settings Tabs */
+.settings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid #333;
+}
+
+.settings-tab {
+  background: transparent;
+  color: #888;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.settings-tab:hover {
+  color: #ccc;
+}
+
+.settings-tab.active {
+  color: #646cff;
+  border-bottom-color: #646cff;
+}
+
+/* Letter Grade Settings */
+.hint {
+  color: #888;
+  font-size: 0.9em;
+  margin-bottom: 1.5rem;
+}
+
+.letter-grades-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.letter-grade-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.letter-input {
+  width: 80px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.threshold-input {
+  width: 100px;
+}
+
+.threshold-label {
+  color: #888;
+  font-weight: 500;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 @media (prefers-color-scheme: light) {
   .header {
     background-color: #535bf2;
@@ -765,6 +835,31 @@ tr:hover {
   .reorder-btn:hover:not(:disabled) {
     background-color: #e5e5e5;
     border-color: #535bf2;
+  }
+
+  .settings-tabs {
+    border-bottom-color: #e0e0e0;
+  }
+
+  .settings-tab {
+    color: #666;
+  }
+
+  .settings-tab:hover {
+    color: #333;
+  }
+
+  .settings-tab.active {
+    color: #535bf2;
+    border-bottom-color: #535bf2;
+  }
+
+  .hint {
+    color: #666;
+  }
+
+  .threshold-label {
+    color: #666;
   }
 }
 

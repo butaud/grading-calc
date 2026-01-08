@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Student, Assignment, Grade, GradeItem } from './types';
+import type { Student, Assignment, Grade, GradeItem, LetterGrade } from './types';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from './utils';
 import { AssignmentList } from './components/AssignmentList';
@@ -12,6 +12,7 @@ function App() {
   const [students, setStudents] = useLocalStorage<Student[]>('students', []);
   const [assignments, setAssignments] = useLocalStorage<Assignment[]>('assignments', []);
   const [grades, setGrades] = useLocalStorage<Grade[]>('grades', []);
+  const [letterGrades, setLetterGrades] = useLocalStorage<LetterGrade[]>('letterGrades', []);
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAssignment, setShowAddAssignment] = useState(false);
@@ -101,7 +102,7 @@ function App() {
       <header className="header">
         <h1>Grading Calculator</h1>
         <button onClick={() => setShowSettings(true)} className="settings-btn">
-          ⚙ Students
+          ⚙ Settings
         </button>
       </header>
 
@@ -111,6 +112,7 @@ function App() {
             assignment={selectedAssignment}
             students={students}
             grades={grades}
+            letterGrades={letterGrades}
             onUpdateGrade={handleUpdateGrade}
             onUpdateAssignment={handleUpdateAssignment}
             onBack={() => setSelectedAssignmentId(null)}
@@ -128,8 +130,10 @@ function App() {
       {showSettings && (
         <Settings
           students={students}
+          letterGrades={letterGrades}
           onAddStudent={handleAddStudent}
           onDeleteStudent={handleDeleteStudent}
+          onUpdateLetterGrades={setLetterGrades}
           onClose={() => setShowSettings(false)}
         />
       )}

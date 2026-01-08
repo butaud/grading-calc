@@ -3,6 +3,11 @@ export interface Student {
   name: string;
 }
 
+export interface LetterGrade {
+  letter: string;
+  threshold: number;
+}
+
 export interface GradeItem {
   id: string;
   name: string;
