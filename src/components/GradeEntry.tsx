@@ -77,14 +77,17 @@ export function GradeEntry({ students, assignments, grades, onUpdateGrade }: Gra
             </thead>
             <tbody>
               {students.map((student) => {
-                const total = selectedAssignmentData.pointContributors.reduce(
-                  (sum, pc) => sum + getGrade(student.id, selectedAssignmentData.id, pc.id),
-                  0
-                );
-                const maxTotal = selectedAssignmentData.pointContributors.reduce(
-                  (sum, pc) => sum + pc.maxPoints,
-                  0
-                );
+                let total = 0;
+                let maxTotal = 0;
+
+                selectedAssignmentData.pointContributors.forEach((pc) => {
+                  const grade = getGrade(student.id, selectedAssignmentData.id, pc.id);
+                  if (grade > 0) {
+                    total += grade;
+                    maxTotal += pc.maxPoints;
+                  }
+                });
+
                 const percentage = maxTotal > 0 ? (total / maxTotal) * 100 : 0;
 
                 return (
