@@ -199,8 +199,6 @@ export function AssignmentDetail({
     );
   }
 
-  const maxTotal = assignment.items.reduce((sum, item) => sum + item.maxPoints, 0);
-
   return (
     <div className="assignment-detail-view">
       <div className="view-header">
@@ -352,7 +350,13 @@ export function AssignmentDetail({
                         </td>
                       ))}
                       <td className="total-cell">
-                        {total.toFixed(2)} / {studentMax > 0 ? studentMax : maxTotal} ({percentage.toFixed(1)}%{letterGrade ? `, ${letterGrade}` : ''})
+                        {studentMax > 0 ? (
+                          <>
+                            {total.toFixed(2)} / {studentMax} ({percentage.toFixed(1)}%{letterGrade ? `, ${letterGrade}` : ''})
+                          </>
+                        ) : (
+                          <span style={{ color: '#888', fontStyle: 'italic' }}>No grades</span>
+                        )}
                       </td>
                     </tr>
                   );
