@@ -85,6 +85,7 @@ export function GradeEntry({ students, assignments, grades, onUpdateGrade }: Gra
                   (sum, pc) => sum + pc.maxPoints,
                   0
                 );
+                const percentage = maxTotal > 0 ? (total / maxTotal) * 100 : 0;
 
                 return (
                   <tr key={student.id}>
@@ -105,7 +106,7 @@ export function GradeEntry({ students, assignments, grades, onUpdateGrade }: Gra
                       </td>
                     ))}
                     <td className="total-cell">
-                      {total.toFixed(2)} / {maxTotal}
+                      {total.toFixed(2)} / {maxTotal} ({percentage.toFixed(1)}%)
                     </td>
                   </tr>
                 );
