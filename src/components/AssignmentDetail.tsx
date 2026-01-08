@@ -100,9 +100,9 @@ export function AssignmentDetail({
     setEditedItems(updated);
   };
 
-  const getGrade = (studentId: string, itemId: string): number => {
+  const getGrade = (studentId: string, itemId: string): number | undefined => {
     const grade = grades.find((g) => g.studentId === studentId && g.assignmentId === assignment.id);
-    return grade?.itemGrades[itemId] ?? 0;
+    return grade?.itemGrades[itemId];
   };
 
   const handleGradeChange = (studentId: string, itemId: string, value: string) => {
@@ -122,8 +122,8 @@ export function AssignmentDetail({
       const grade = grades.find((g) => g.studentId === student.id && g.assignmentId === assignment.id);
 
       if (itemId) {
-        const points = grade?.itemGrades[itemId] ?? 0;
-        if (points > 0) {
+        const points = grade?.itemGrades[itemId];
+        if (points != null) {
           total += points;
           count++;
         }
@@ -131,8 +131,8 @@ export function AssignmentDetail({
         let studentTotal = 0;
         let studentMax = 0;
         assignment.items.forEach((item) => {
-          const points = grade?.itemGrades[item.id] ?? 0;
-          if (points > 0) {
+          const points = grade?.itemGrades[item.id];
+          if (points != null) {
             studentTotal += points;
             studentMax += item.maxPoints;
           }
@@ -164,8 +164,8 @@ export function AssignmentDetail({
         let studentMax = 0;
 
         assignment.items.forEach((item) => {
-          const points = grade?.itemGrades[item.id] ?? 0;
-          if (points > 0) {
+          const points = grade?.itemGrades[item.id];
+          if (points != null) {
             studentTotal += points;
             studentMax += item.maxPoints;
           }
@@ -322,7 +322,7 @@ export function AssignmentDetail({
 
                   assignment.items.forEach((item) => {
                     const grade = getGrade(student.id, item.id);
-                    if (grade > 0) {
+                    if (grade != null) {
                       total += grade;
                       studentMax += item.maxPoints;
                     }
@@ -338,7 +338,7 @@ export function AssignmentDetail({
                         <td key={item.id}>
                           <input
                             type="number"
-                            value={getGrade(student.id, item.id) || ''}
+                            value={getGrade(student.id, item.id) ?? ''}
                             onChange={(e) => handleGradeChange(student.id, item.id, e.target.value)}
                             className="grade-input"
                             min="0"
