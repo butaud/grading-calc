@@ -3,7 +3,7 @@ export interface Student {
   name: string;
 }
 
-export interface PointContributor {
+export interface GradeItem {
   id: string;
   name: string;
   maxPoints: number;
@@ -12,13 +12,13 @@ export interface PointContributor {
 export interface Assignment {
   id: string;
   name: string;
-  pointContributors: PointContributor[];
+  items: GradeItem[];
 }
 
 export interface Grade {
   studentId: string;
   assignmentId: string;
-  pointContributorGrades: Record<string, number>;
+  itemGrades: Record<string, number>;
 }
 
 export interface AppData {

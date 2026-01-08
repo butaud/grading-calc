@@ -7,7 +7,7 @@ interface StatisticsProps {
 }
 
 export function Statistics({ students, assignments, grades }: StatisticsProps) {
-  const calculateAverage = (assignmentId: string, pointContributorId?: string): number => {
+  const calculateAverage = (assignmentId: string, itemId?: string): number => {
     if (students.length === 0) return 0;
 
     const assignment = assignments.find((a) => a.id === assignmentId);
@@ -19,13 +19,13 @@ export function Statistics({ students, assignments, grades }: StatisticsProps) {
     students.forEach((student) => {
       const grade = grades.find((g) => g.studentId === student.id && g.assignmentId === assignmentId);
 
-      if (pointContributorId) {
-        const points = grade?.pointContributorGrades[pointContributorId] ?? 0;
+      if (itemId) {
+        const points = grade?.itemGrades[itemId] ?? 0;
         total += points;
         count++;
       } else {
-        const assignmentTotal = assignment.pointContributors.reduce(
-          (sum, pc) => sum + (grade?.pointContributorGrades[pc.id] ?? 0),
+        const assignmentTotal = assignment.items.reduce(
+          (sum, item) => sum + (grade?.itemGrades[item.id] ?? 0),
           0
         );
         total += assignmentTotal;
@@ -36,17 +36,17 @@ export function Statistics({ students, assignments, grades }: StatisticsProps) {
     return count > 0 ? total / count : 0;
   };
 
-  const calculatePercentage = (assignmentId: string, pointContributorId?: string): number => {
+  const calculatePercentage = (assignmentId: string, itemId?: string): number => {
     const assignment = assignments.find((a) => a.id === assignmentId);
     if (!assignment) return 0;
 
-    const average = calculateAverage(assignmentId, pointContributorId);
+    const average = calculateAverage(assignmentId, itemId);
 
-    if (pointContributorId) {
-      const contributor = assignment.pointContributors.find((pc) => pc.id === pointContributorId);
-      return contributor && contributor.maxPoints > 0 ? (average / contributor.maxPoints) * 100 : 0;
+    if (itemId) {
+      const item = assignment.items.find((item) => item.id === itemId);
+      return item && item.maxPoints > 0 ? (average / item.maxPoints) * 100 : 0;
     } else {
-      const maxTotal = assignment.pointContributors.reduce((sum, pc) => sum + pc.maxPoints, 0);
+      const maxTotal = assignment.items.reduce((sum, item) => sum + item.maxPoints, 0);
       return maxTotal > 0 ? (average / maxTotal) * 100 : 0;
     }
   };
@@ -65,7 +65,7 @@ export function Statistics({ students, assignments, grades }: StatisticsProps) {
       <h2>Class Averages</h2>
       <div className="statistics">
         {assignments.map((assignment) => {
-          const maxTotal = assignment.pointContributors.reduce((sum, pc) => sum + pc.maxPoints, 0);
+          const maxTotal = assignment.items.reduce((sum, item) => sum + item.maxPoints, 0);
           const assignmentAverage = calculateAverage(assignment.id);
           const assignmentPercentage = calculatePercentage(assignment.id);
 
@@ -80,15 +80,15 @@ export function Statistics({ students, assignments, grades }: StatisticsProps) {
               </div>
 
               <div className="contributor-stats">
-                {assignment.pointContributors.map((pc) => {
-                  const pcAverage = calculateAverage(assignment.id, pc.id);
-                  const pcPercentage = calculatePercentage(assignment.id, pc.id);
+                {assignment.items.map((item) => {
+                  const itemAverage = calculateAverage(assignment.id, item.id);
+                  const itemPercentage = calculatePercentage(assignment.id, item.id);
 
                   return (
-                    <div key={pc.id} className="stats-row">
-                      <span className="stats-label">{pc.name}:</span>
+                    <div key={item.id} className="stats-row">
+                      <span className="stats-label">{item.name}:</span>
                       <span className="stats-value">
-                        {pcAverage.toFixed(2)} / {pc.maxPoints} ({pcPercentage.toFixed(1)}%)
+                        {itemAverage.toFixed(2)} / {item.maxPoints} ({itemPercentage.toFixed(1)}%)
                       </span>
                     </div>
                   );

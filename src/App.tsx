@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Student, Assignment, Grade, PointContributor } from './types';
+import type { Student, Assignment, Grade, GradeItem } from './types';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from './utils';
 import { AssignmentList } from './components/AssignmentList';
@@ -29,11 +29,11 @@ function App() {
     setGrades(grades.filter((g) => g.studentId !== id));
   };
 
-  const handleAddAssignment = (name: string, pointContributors: PointContributor[]) => {
+  const handleAddAssignment = (name: string, items: GradeItem[]) => {
     const newAssignment: Assignment = {
       id: generateId(),
       name,
-      pointContributors
+      items
     };
     setAssignments([...assignments, newAssignment]);
   };
@@ -48,7 +48,7 @@ function App() {
     }
   };
 
-  const handleUpdateGrade = (studentId: string, assignmentId: string, pointContributorId: string, points: number) => {
+  const handleUpdateGrade = (studentId: string, assignmentId: string, itemId: string, points: number) => {
     const existingGradeIndex = grades.findIndex(
       (g) => g.studentId === studentId && g.assignmentId === assignmentId
     );
@@ -57,9 +57,9 @@ function App() {
       const updatedGrades = [...grades];
       updatedGrades[existingGradeIndex] = {
         ...updatedGrades[existingGradeIndex],
-        pointContributorGrades: {
-          ...updatedGrades[existingGradeIndex].pointContributorGrades,
-          [pointContributorId]: points
+        itemGrades: {
+          ...updatedGrades[existingGradeIndex].itemGrades,
+          [itemId]: points
         }
       };
       setGrades(updatedGrades);
@@ -67,8 +67,8 @@ function App() {
       const newGrade: Grade = {
         studentId,
         assignmentId,
-        pointContributorGrades: {
-          [pointContributorId]: points
+        itemGrades: {
+          [itemId]: points
         }
       };
       setGrades([...grades, newGrade]);

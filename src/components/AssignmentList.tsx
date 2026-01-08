@@ -24,7 +24,7 @@ export function AssignmentList({ assignments, onSelectAssignment, onAddAssignmen
       ) : (
         <div className="assignment-cards">
           {assignments.map((assignment) => {
-            const totalPoints = assignment.pointContributors.reduce((sum, pc) => sum + pc.maxPoints, 0);
+            const totalPoints = assignment.items.reduce((sum, item) => sum + item.maxPoints, 0);
             return (
               <div
                 key={assignment.id}
@@ -35,13 +35,13 @@ export function AssignmentList({ assignments, onSelectAssignment, onAddAssignmen
                 <div className="assignment-card-meta">
                   <span className="point-count">{totalPoints} points total</span>
                   <span className="contributor-count">
-                    {assignment.pointContributors.length} contributor{assignment.pointContributors.length !== 1 ? 's' : ''}
+                    {assignment.items.length} item{assignment.items.length !== 1 ? 's' : ''}
                   </span>
                 </div>
                 <div className="assignment-card-contributors">
-                  {assignment.pointContributors.map((pc) => (
-                    <span key={pc.id} className="contributor-chip">
-                      {pc.name}: {pc.maxPoints}
+                  {assignment.items.map((item) => (
+                    <span key={item.id} className="contributor-chip">
+                      {item.name}: {item.maxPoints}
                     </span>
                   ))}
                 </div>

@@ -4,7 +4,7 @@ interface AssignmentDetailProps {
   assignment: Assignment;
   students: Student[];
   grades: Grade[];
-  onUpdateGrade: (studentId: string, assignmentId: string, pointContributorId: string, points: number) => void;
+  onUpdateGrade: (studentId: string, assignmentId: string, itemId: string, points: number) => void;
   onBack: () => void;
   onDelete: () => void;
 }
@@ -17,19 +17,19 @@ export function AssignmentDetail({
   onBack,
   onDelete,
 }: AssignmentDetailProps) {
-  const getGrade = (studentId: string, pointContributorId: string): number => {
+  const getGrade = (studentId: string, itemId: string): number => {
     const grade = grades.find((g) => g.studentId === studentId && g.assignmentId === assignment.id);
-    return grade?.pointContributorGrades[pointContributorId] ?? 0;
+    return grade?.itemGrades[itemId] ?? 0;
   };
 
-  const handleGradeChange = (studentId: string, pointContributorId: string, value: string) => {
+  const handleGradeChange = (studentId: string, itemId: string, value: string) => {
     const points = value === '' ? 0 : Number(value);
     if (!isNaN(points)) {
-      onUpdateGrade(studentId, assignment.id, pointContributorId, points);
+      onUpdateGrade(studentId, assignment.id, itemId, points);
     }
   };
 
-  const calculateAverage = (pointContributorId?: string): number => {
+  const calculateAverage = (itemId?: string): number => {
     if (students.length === 0) return 0;
 
     let total = 0;
@@ -38,8 +38,8 @@ export function AssignmentDetail({
     students.forEach((student) => {
       const grade = grades.find((g) => g.studentId === student.id && g.assignmentId === assignment.id);
 
-      if (pointContributorId) {
-        const points = grade?.pointContributorGrades[pointContributorId] ?? 0;
+      if (itemId) {
+        const points = grade?.itemGrades[itemId] ?? 0;
         if (points > 0) {
           total += points;
           count++;
@@ -47,11 +47,11 @@ export function AssignmentDetail({
       } else {
         let studentTotal = 0;
         let studentMax = 0;
-        assignment.pointContributors.forEach((pc) => {
-          const points = grade?.pointContributorGrades[pc.id] ?? 0;
+        assignment.items.forEach((item) => {
+          const points = grade?.itemGrades[item.id] ?? 0;
           if (points > 0) {
             studentTotal += points;
-            studentMax += pc.maxPoints;
+            studentMax += item.maxPoints;
           }
         });
         if (studentMax > 0) {
@@ -64,12 +64,12 @@ export function AssignmentDetail({
     return count > 0 ? total / count : 0;
   };
 
-  const calculatePercentage = (pointContributorId?: string): number => {
-    const average = calculateAverage(pointContributorId);
+  const calculatePercentage = (itemId?: string): number => {
+    const average = calculateAverage(itemId);
 
-    if (pointContributorId) {
-      const contributor = assignment.pointContributors.find((pc) => pc.id === pointContributorId);
-      return contributor && contributor.maxPoints > 0 ? (average / contributor.maxPoints) * 100 : 0;
+    if (itemId) {
+      const item = assignment.items.find((item) => item.id === itemId);
+      return item && item.maxPoints > 0 ? (average / item.maxPoints) * 100 : 0;
     } else {
       // For overall average, calculate based on students who have grades
       let totalPercentage = 0;
@@ -80,11 +80,11 @@ export function AssignmentDetail({
         let studentTotal = 0;
         let studentMax = 0;
 
-        assignment.pointContributors.forEach((pc) => {
-          const points = grade?.pointContributorGrades[pc.id] ?? 0;
+        assignment.items.forEach((item) => {
+          const points = grade?.itemGrades[item.id] ?? 0;
           if (points > 0) {
             studentTotal += points;
-            studentMax += pc.maxPoints;
+            studentMax += item.maxPoints;
           }
         });
 
@@ -112,7 +112,7 @@ export function AssignmentDetail({
     );
   }
 
-  const maxTotal = assignment.pointContributors.reduce((sum, pc) => sum + pc.maxPoints, 0);
+  const maxTotal = assignment.items.reduce((sum, item) => sum + item.maxPoints, 0);
 
   return (
     <div className="assignment-detail-view">
@@ -134,9 +134,9 @@ export function AssignmentDetail({
               <thead>
                 <tr>
                   <th>Student</th>
-                  {assignment.pointContributors.map((pc) => (
-                    <th key={pc.id}>
-                      {pc.name} ({pc.maxPoints})
+                  {assignment.items.map((item) => (
+                    <th key={item.id}>
+                      {item.name} ({item.maxPoints})
                     </th>
                   ))}
                   <th>Total</th>
@@ -147,11 +147,11 @@ export function AssignmentDetail({
                   let total = 0;
                   let studentMax = 0;
 
-                  assignment.pointContributors.forEach((pc) => {
-                    const grade = getGrade(student.id, pc.id);
+                  assignment.items.forEach((item) => {
+                    const grade = getGrade(student.id, item.id);
                     if (grade > 0) {
                       total += grade;
-                      studentMax += pc.maxPoints;
+                      studentMax += item.maxPoints;
                     }
                   });
 
@@ -160,15 +160,15 @@ export function AssignmentDetail({
                   return (
                     <tr key={student.id}>
                       <td>{student.name}</td>
-                      {assignment.pointContributors.map((pc) => (
-                        <td key={pc.id}>
+                      {assignment.items.map((item) => (
+                        <td key={item.id}>
                           <input
                             type="number"
-                            value={getGrade(student.id, pc.id) || ''}
-                            onChange={(e) => handleGradeChange(student.id, pc.id, e.target.value)}
+                            value={getGrade(student.id, item.id) || ''}
+                            onChange={(e) => handleGradeChange(student.id, item.id, e.target.value)}
                             className="grade-input"
                             min="0"
-                            max={pc.maxPoints}
+                            max={item.maxPoints}
                             step="0.01"
                           />
                         </td>
@@ -192,17 +192,17 @@ export function AssignmentDetail({
               <div className="stat-value">{calculatePercentage().toFixed(1)}%</div>
             </div>
 
-            {assignment.pointContributors.map((pc) => {
-              const pcAverage = calculateAverage(pc.id);
-              const pcPercentage = calculatePercentage(pc.id);
+            {assignment.items.map((item) => {
+              const itemAverage = calculateAverage(item.id);
+              const itemPercentage = calculatePercentage(item.id);
 
               return (
-                <div key={pc.id} className="stat-card">
-                  <div className="stat-label">{pc.name}</div>
+                <div key={item.id} className="stat-card">
+                  <div className="stat-label">{item.name}</div>
                   <div className="stat-value">
-                    {pcAverage.toFixed(2)} / {pc.maxPoints}
+                    {itemAverage.toFixed(2)} / {item.maxPoints}
                   </div>
-                  <div className="stat-percentage">{pcPercentage.toFixed(1)}%</div>
+                  <div className="stat-percentage">{itemPercentage.toFixed(1)}%</div>
                 </div>
               );
             })}

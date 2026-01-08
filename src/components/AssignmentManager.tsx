@@ -1,55 +1,55 @@
 import { useState } from 'react';
-import type { Assignment, PointContributor } from '../types';
+import type { Assignment, GradeItem } from '../types';
 import { generateId } from '../utils';
 
 interface AssignmentManagerProps {
   assignments: Assignment[];
-  onAddAssignment: (name: string, pointContributors: PointContributor[]) => void;
+  onAddAssignment: (name: string, items: GradeItem[]) => void;
   onDeleteAssignment: (id: string) => void;
 }
 
 export function AssignmentManager({ assignments, onAddAssignment, onDeleteAssignment }: AssignmentManagerProps) {
   const [assignmentName, setAssignmentName] = useState('');
-  const [pointContributors, setPointContributors] = useState<Array<{ name: string; maxPoints: string }>>([
+  const [items, setItems] = useState<Array<{ name: string; maxPoints: string }>>([
     { name: '', maxPoints: '' }
   ]);
 
-  const handleAddPointContributor = () => {
-    setPointContributors([...pointContributors, { name: '', maxPoints: '' }]);
+  const handleAddItem = () => {
+    setItems([...items, { name: '', maxPoints: '' }]);
   };
 
-  const handleRemovePointContributor = (index: number) => {
-    setPointContributors(pointContributors.filter((_, i) => i !== index));
+  const handleRemoveItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
   };
 
-  const handlePointContributorChange = (index: number, field: 'name' | 'maxPoints', value: string) => {
-    const updated = [...pointContributors];
+  const handleItemChange = (index: number, field: 'name' | 'maxPoints', value: string) => {
+    const updated = [...items];
     updated[index][field] = value;
-    setPointContributors(updated);
+    setItems(updated);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignmentName.trim()) return;
 
-    const validContributors = pointContributors.filter(
-      (pc) => pc.name.trim() && pc.maxPoints.trim() && !isNaN(Number(pc.maxPoints))
+    const validItems = items.filter(
+      (item) => item.name.trim() && item.maxPoints.trim() && !isNaN(Number(item.maxPoints))
     );
 
-    if (validContributors.length === 0) {
-      alert('Please add at least one valid point contributor');
+    if (validItems.length === 0) {
+      alert('Please add at least one valid item');
       return;
     }
 
-    const contributors: PointContributor[] = validContributors.map((pc) => ({
+    const gradeItems: GradeItem[] = validItems.map((item) => ({
       id: generateId(),
-      name: pc.name.trim(),
-      maxPoints: Number(pc.maxPoints)
+      name: item.name.trim(),
+      maxPoints: Number(item.maxPoints)
     }));
 
-    onAddAssignment(assignmentName.trim(), contributors);
+    onAddAssignment(assignmentName.trim(), gradeItems);
     setAssignmentName('');
-    setPointContributors([{ name: '', maxPoints: '' }]);
+    setItems([{ name: '', maxPoints: '' }]);
   };
 
   return (
@@ -65,34 +65,34 @@ export function AssignmentManager({ assignments, onAddAssignment, onDeleteAssign
         />
 
         <div className="point-contributors">
-          <h3>Point Contributors</h3>
-          {pointContributors.map((pc, index) => (
+          <h3>Items</h3>
+          {items.map((item, index) => (
             <div key={index} className="point-contributor-row">
               <input
                 type="text"
-                value={pc.name}
-                onChange={(e) => handlePointContributorChange(index, 'name', e.target.value)}
-                placeholder="Contributor name (e.g., Homework, Quiz)"
+                value={item.name}
+                onChange={(e) => handleItemChange(index, 'name', e.target.value)}
+                placeholder="Item name (e.g., Question 1, Essay)"
                 className="input"
               />
               <input
                 type="number"
-                value={pc.maxPoints}
-                onChange={(e) => handlePointContributorChange(index, 'maxPoints', e.target.value)}
+                value={item.maxPoints}
+                onChange={(e) => handleItemChange(index, 'maxPoints', e.target.value)}
                 placeholder="Max points"
                 className="input small"
                 min="0"
                 step="0.01"
               />
-              {pointContributors.length > 1 && (
-                <button type="button" onClick={() => handleRemovePointContributor(index)} className="delete-btn">
+              {items.length > 1 && (
+                <button type="button" onClick={() => handleRemoveItem(index)} className="delete-btn">
                   Remove
                 </button>
               )}
             </div>
           ))}
-          <button type="button" onClick={handleAddPointContributor} className="secondary-btn">
-            Add Point Contributor
+          <button type="button" onClick={handleAddItem} className="secondary-btn">
+            Add Item
           </button>
         </div>
 
@@ -108,9 +108,9 @@ export function AssignmentManager({ assignments, onAddAssignment, onDeleteAssign
               <div>
                 <strong>{assignment.name}</strong>
                 <div className="point-contributors-list">
-                  {assignment.pointContributors.map((pc) => (
-                    <span key={pc.id} className="contributor-tag">
-                      {pc.name}: {pc.maxPoints} pts
+                  {assignment.items.map((item) => (
+                    <span key={item.id} className="contributor-tag">
+                      {item.name}: {item.maxPoints} pts
                     </span>
                   ))}
                 </div>
