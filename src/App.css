@@ -259,8 +259,6 @@ table {
   width: 100%;
   border-collapse: collapse;
   background-color: #1a1a1a;
-  border-radius: 8px;
-  overflow: hidden;
 }
 
 th {
