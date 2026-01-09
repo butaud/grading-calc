@@ -151,6 +151,88 @@ export function AssignmentDetail({
     return count > 0 ? total / count : 0;
   };
 
+  const calculateMedian = (itemId?: string): number => {
+    if (students.length === 0) return 0;
+
+    const values: number[] = [];
+
+    students.forEach((student) => {
+      const grade = grades.find((g) => g.studentId === student.id && g.assignmentId === assignment.id);
+
+      if (itemId) {
+        const points = grade?.itemGrades[itemId];
+        if (points != null) {
+          values.push(points);
+        }
+      } else {
+        let studentTotal = 0;
+        let studentMax = 0;
+        assignment.items.forEach((item) => {
+          const points = grade?.itemGrades[item.id];
+          if (points != null) {
+            studentTotal += points;
+            studentMax += item.maxPoints;
+          }
+        });
+        if (studentMax > 0) {
+          values.push(studentTotal);
+        }
+      }
+    });
+
+    if (values.length === 0) return 0;
+
+    values.sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+
+    if (values.length % 2 === 0) {
+      return (values[mid - 1] + values[mid]) / 2;
+    } else {
+      return values[mid];
+    }
+  };
+
+  const calculateMedianPercentage = (itemId?: string): number => {
+    const median = calculateMedian(itemId);
+
+    if (itemId) {
+      const item = assignment.items.find((item) => item.id === itemId);
+      return item && item.maxPoints > 0 ? (median / item.maxPoints) * 100 : 0;
+    } else {
+      // For overall median, calculate based on students who have grades
+      const percentages: number[] = [];
+
+      students.forEach((student) => {
+        const grade = grades.find((g) => g.studentId === student.id && g.assignmentId === assignment.id);
+        let studentTotal = 0;
+        let studentMax = 0;
+
+        assignment.items.forEach((item) => {
+          const points = grade?.itemGrades[item.id];
+          if (points != null) {
+            studentTotal += points;
+            studentMax += item.maxPoints;
+          }
+        });
+
+        if (studentMax > 0) {
+          percentages.push((studentTotal / studentMax) * 100);
+        }
+      });
+
+      if (percentages.length === 0) return 0;
+
+      percentages.sort((a, b) => a - b);
+      const mid = Math.floor(percentages.length / 2);
+
+      if (percentages.length % 2 === 0) {
+        return (percentages[mid - 1] + percentages[mid]) / 2;
+      } else {
+        return percentages[mid];
+      }
+    }
+  };
+
   const calculatePercentage = (itemId?: string): number => {
     const average = calculateAverage(itemId);
 
@@ -380,6 +462,27 @@ export function AssignmentDetail({
                     {letterGrades.length > 0 && (() => {
                       const overallPercentage = calculatePercentage();
                       const letterGrade = getLetterGrade(overallPercentage, letterGrades);
+                      return letterGrade ? ` (${letterGrade})` : '';
+                    })()}
+                  </td>
+                </tr>
+                <tr className="stats-row">
+                  <td className="stats-label">Class Median</td>
+                  {assignment.items.map((item) => {
+                    const itemMedian = calculateMedian(item.id);
+                    const itemMedianPercentage = calculateMedianPercentage(item.id);
+                    return (
+                      <td key={item.id} className="stats-cell">
+                        {itemMedian.toFixed(2)}<br />
+                        <span className="stats-percentage">({itemMedianPercentage.toFixed(1)}%)</span>
+                      </td>
+                    );
+                  })}
+                  <td className="stats-cell stats-overall">
+                    {calculateMedianPercentage().toFixed(1)}%
+                    {letterGrades.length > 0 && (() => {
+                      const overallMedianPercentage = calculateMedianPercentage();
+                      const letterGrade = getLetterGrade(overallMedianPercentage, letterGrades);
                       return letterGrade ? ` (${letterGrade})` : '';
                     })()}
                   </td>
