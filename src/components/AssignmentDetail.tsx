@@ -472,7 +472,7 @@ export function AssignmentDetail({
 
       {!isEditing && <div className="detail-sections">
         <section className="grades-section">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' }}>
             <h3 style={{ margin: 0 }}>Student Grades</h3>
             {letterGrades.length > 0 && (() => {
               // Calculate grade distribution
@@ -503,7 +503,7 @@ export function AssignmentDetail({
               const sorted = [...letterGrades].sort((a, b) => b.threshold - a.threshold);
 
               return (
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                   {sorted.map((lg) => {
                     const count = distribution.get(lg.letter);
                     if (!count) return null;
