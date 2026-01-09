@@ -2,25 +2,28 @@ import { useState, useEffect } from 'react';
 import type { Student, Assignment, Grade, GradeItem } from './types';
 import { useAppData } from './useAppData';
 import { generateId } from './utils';
+import { runMigrations } from './migrations';
 import { AssignmentList } from './components/AssignmentList';
 import { AssignmentDetail } from './components/AssignmentDetail';
 import { Settings } from './components/Settings';
 import { AddAssignmentModal } from './components/AddAssignmentModal';
+import { ClassSelector } from './components/ClassSelector';
 import './App.css';
 
 function App() {
   const {
-    students,
-    assignments,
-    grades,
+    classes,
     letterGrades,
     version,
-    setStudents,
-    setAssignments,
-    setGrades,
+    setClasses,
+    updateClass,
     setLetterGrades,
     importData
   } = useAppData();
+
+  const [selectedClassId, setSelectedClassId] = useState<string>(() => {
+    return classes[0]?.id || '';
+  });
 
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(() => {
     // Initialize with hash if present
@@ -29,6 +32,25 @@ function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAssignment, setShowAddAssignment] = useState(false);
+
+  // Get current class data
+  const currentClass = classes.find(c => c.id === selectedClassId);
+  const students = currentClass?.students || [];
+  const assignments = currentClass?.assignments || [];
+  const grades = currentClass?.grades || [];
+
+  // Helper to update current class
+  const updateCurrentClass = (updates: Partial<typeof currentClass>) => {
+    if (!currentClass) return;
+    updateClass(selectedClassId, { ...currentClass, ...updates });
+  };
+
+  // Ensure selectedClassId always points to a valid class
+  useEffect(() => {
+    if (classes.length > 0 && !classes.find(c => c.id === selectedClassId)) {
+      setSelectedClassId(classes[0].id);
+    }
+  }, [classes, selectedClassId]);
 
   // Handle import on initial load
   useEffect(() => {
@@ -41,14 +63,24 @@ function App() {
         const data = JSON.parse(decoded);
 
         // Check if there's existing local data
-        const hasExistingData = students.length > 0 || assignments.length > 0 || grades.length > 0 || letterGrades.length > 0;
+        const hasExistingData = classes.some(c => c.students.length > 0 || c.assignments.length > 0 || c.grades.length > 0) || letterGrades.length > 0;
 
         if (hasExistingData) {
           if (confirm('You have existing data. Do you want to overwrite it with the imported data? This cannot be undone.')) {
             importData(data);
+            // Set selected class to first class after import
+            const migrated = runMigrations(data);
+            if (migrated.classes && migrated.classes.length > 0) {
+              setSelectedClassId(migrated.classes[0].id);
+            }
           }
         } else {
           importData(data);
+          // Set selected class to first class after import
+          const migrated = runMigrations(data);
+          if (migrated.classes && migrated.classes.length > 0) {
+            setSelectedClassId(migrated.classes[0].id);
+          }
         }
 
         // Remove import parameter from URL
@@ -100,12 +132,14 @@ function App() {
       id: generateId(),
       name
     };
-    setStudents([...students, newStudent]);
+    updateCurrentClass({ students: [...students, newStudent] });
   };
 
   const handleDeleteStudent = (id: string) => {
-    setStudents(students.filter((s) => s.id !== id));
-    setGrades(grades.filter((g) => g.studentId !== id));
+    updateCurrentClass({
+      students: students.filter((s) => s.id !== id),
+      grades: grades.filter((g) => g.studentId !== id)
+    });
   };
 
   const handleAddAssignment = (name: string, items: GradeItem[]) => {
@@ -114,13 +148,15 @@ function App() {
       name,
       items
     };
-    setAssignments([...assignments, newAssignment]);
+    updateCurrentClass({ assignments: [...assignments, newAssignment] });
   };
 
   const handleDeleteAssignment = (id: string) => {
     if (confirm('Are you sure you want to delete this assignment? All grades for this assignment will be lost.')) {
-      setAssignments(assignments.filter((a) => a.id !== id));
-      setGrades(grades.filter((g) => g.assignmentId !== id));
+      updateCurrentClass({
+        assignments: assignments.filter((a) => a.id !== id),
+        grades: grades.filter((g) => g.assignmentId !== id)
+      });
       if (selectedAssignmentId === id) {
         setSelectedAssignmentId(null);
       }
@@ -132,8 +168,10 @@ function App() {
       (g) => g.studentId === studentId && g.assignmentId === assignmentId
     );
 
+    let updatedGrades: Grade[];
+
     if (existingGradeIndex >= 0) {
-      const updatedGrades = [...grades];
+      updatedGrades = [...grades];
       const updatedItemGrades = { ...updatedGrades[existingGradeIndex].itemGrades };
 
       if (points === null) {
@@ -147,7 +185,6 @@ function App() {
         ...updatedGrades[existingGradeIndex],
         itemGrades: updatedItemGrades
       };
-      setGrades(updatedGrades);
     } else if (points !== null) {
       // Only create new grade if points is not null
       const newGrade: Grade = {
@@ -157,15 +194,19 @@ function App() {
           [itemId]: points
         }
       };
-      setGrades([...grades, newGrade]);
+      updatedGrades = [...grades, newGrade];
+    } else {
+      return; // Nothing to do
     }
+
+    updateCurrentClass({ grades: updatedGrades });
   };
 
   const handleUpdateAssignment = (updatedAssignment: Assignment, deletedItemIds: string[]) => {
-    setAssignments(assignments.map(a => a.id === updatedAssignment.id ? updatedAssignment : a));
+    const updatedAssignments = assignments.map(a => a.id === updatedAssignment.id ? updatedAssignment : a);
 
     if (deletedItemIds.length > 0) {
-      setGrades(grades.map(grade => {
+      const updatedGrades = grades.map(grade => {
         if (grade.assignmentId === updatedAssignment.id) {
           const updatedItemGrades = { ...grade.itemGrades };
           deletedItemIds.forEach(itemId => {
@@ -174,7 +215,62 @@ function App() {
           return { ...grade, itemGrades: updatedItemGrades };
         }
         return grade;
-      }));
+      });
+      updateCurrentClass({ assignments: updatedAssignments, grades: updatedGrades });
+    } else {
+      updateCurrentClass({ assignments: updatedAssignments });
+    }
+  };
+
+  const handleAddClass = () => {
+    const name = prompt('Enter a name for the new class:');
+    if (name && name.trim()) {
+      const newClass = {
+        id: generateId(),
+        name: name.trim(),
+        students: [],
+        assignments: [],
+        grades: []
+      };
+      setClasses([...classes, newClass]);
+      setSelectedClassId(newClass.id);
+    }
+  };
+
+  const handleRenameClass = (classId: string) => {
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return;
+
+    const newName = prompt('Enter a new name for this class:', cls.name);
+    if (newName && newName.trim() && newName !== cls.name) {
+      updateClass(classId, { ...cls, name: newName.trim() });
+    }
+  };
+
+  const handleDeleteClass = (classId: string) => {
+    if (classes.length === 1) {
+      alert('You cannot delete the last class.');
+      return;
+    }
+
+    if (confirm('Are you sure you want to delete this class? All students, assignments, and grades in this class will be lost.')) {
+      const updatedClasses = classes.filter(c => c.id !== classId);
+      setClasses(updatedClasses);
+
+      // If we're deleting the selected class, select another one
+      if (selectedClassId === classId) {
+        setSelectedClassId(updatedClasses[0].id);
+      }
+    }
+  };
+
+  const handleImportData = (data: any) => {
+    importData(data);
+    // After import, select the first class from the imported data
+    // Need to run migrations to get the actual classes
+    const migrated = runMigrations(data);
+    if (migrated.classes && migrated.classes.length > 0) {
+      setSelectedClassId(migrated.classes[0].id);
     }
   };
 
@@ -186,6 +282,14 @@ function App() {
     <div className="app">
       <header className="header">
         <h1>Grading Calculator</h1>
+        <ClassSelector
+          classes={classes}
+          selectedClassId={selectedClassId}
+          onSelectClass={setSelectedClassId}
+          onRenameClass={handleRenameClass}
+          onDeleteClass={handleDeleteClass}
+          onAddClass={handleAddClass}
+        />
         <button onClick={() => setShowSettings(true)} className="settings-btn">
           ⚙ Settings
         </button>
@@ -218,14 +322,13 @@ function App() {
       {showSettings && (
         <Settings
           students={students}
-          assignments={assignments}
-          grades={grades}
+          classes={classes}
           letterGrades={letterGrades}
           version={version}
           onAddStudent={handleAddStudent}
           onDeleteStudent={handleDeleteStudent}
           onUpdateLetterGrades={setLetterGrades}
-          onImportData={importData}
+          onImportData={handleImportData}
           onClose={() => setShowSettings(false)}
         />
       )}

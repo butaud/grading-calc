@@ -26,7 +26,9 @@ export interface Grade {
   itemGrades: Record<string, number>;
 }
 
-export interface AppData {
+export interface Class {
+  id: string;
+  name: string;
   students: Student[];
   assignments: Assignment[];
   grades: Grade[];

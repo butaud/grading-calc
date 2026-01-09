@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { StudentManager } from './StudentManager';
 import { LetterGradeSettings } from './LetterGradeSettings';
-import type { Student, LetterGrade, Assignment, Grade } from '../types';
+import type { Student, LetterGrade } from '../types';
 import { CURRENT_VERSION } from '../migrations';
 
 interface SettingsProps {
   students: Student[];
-  assignments: Assignment[];
-  grades: Grade[];
+  classes: any[]; // All classes for export
   letterGrades: LetterGrade[];
   version: number;
   onAddStudent: (name: string) => void;
@@ -17,16 +16,14 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-export function Settings({ students, assignments, grades, letterGrades, version, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onImportData, onClose }: SettingsProps) {
+export function Settings({ students, classes, letterGrades, version, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onImportData, onClose }: SettingsProps) {
   const [activeTab, setActiveTab] = useState<'students' | 'letterGrades' | 'export'>('students');
   const [exportUrl, setExportUrl] = useState<string>('');
 
   const handleGenerateExportLink = () => {
     const exportData = {
       version: CURRENT_VERSION,
-      students,
-      assignments,
-      grades,
+      classes,
       letterGrades
     };
 
@@ -39,9 +36,7 @@ export function Settings({ students, assignments, grades, letterGrades, version,
   const handleExportJSON = () => {
     const exportData = {
       version: CURRENT_VERSION,
-      students,
-      assignments,
-      grades,
+      classes,
       letterGrades
     };
 

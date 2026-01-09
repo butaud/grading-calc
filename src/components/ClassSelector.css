@@ -1,0 +1,228 @@
+.class-selector {
+  position: relative;
+  min-width: 250px;
+  max-width: 400px;
+}
+
+.class-selector-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.6em 1em;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
+.class-selector-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: white;
+}
+
+.class-selector-button:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: white;
+}
+
+.class-selector-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.class-selector-chevron {
+  font-size: 0.7em;
+  margin-left: 0.5em;
+  opacity: 0.7;
+}
+
+.class-selector-options {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  background-color: #242424;
+  border: 1px solid #444;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.class-selector-option {
+  cursor: pointer;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.25rem;
+  transition: background-color 0.15s;
+}
+
+.class-selector-option.active {
+  background-color: rgba(100, 108, 255, 0.1);
+}
+
+.class-option-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.class-option-name {
+  flex: 1;
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.class-option-name.selected {
+  color: #646cff;
+  font-weight: 600;
+}
+
+.class-option-actions {
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.class-selector-option:hover .class-option-actions {
+  opacity: 1;
+}
+
+.class-option-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  line-height: 1;
+}
+
+.class-option-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.class-option-btn.delete {
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+
+.class-option-btn.delete:hover {
+  background-color: rgba(211, 47, 47, 0.2);
+  color: #d32f2f;
+}
+
+.class-selector-divider {
+  height: 1px;
+  background-color: #444;
+  margin: 0.5rem 0;
+}
+
+.class-selector-add {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #646cff;
+  font-size: 1rem;
+  text-align: left;
+}
+
+.class-selector-add:hover {
+  background-color: rgba(100, 108, 255, 0.1);
+  border-color: #646cff;
+}
+
+/* Light mode styles */
+@media (prefers-color-scheme: light) {
+  .class-selector-button {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .class-selector-button:hover,
+  .class-selector-button:focus {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .class-selector-options {
+    background-color: white;
+    border-color: #ddd;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .class-selector-option.active {
+    background-color: rgba(83, 91, 242, 0.1);
+  }
+
+  .class-option-name {
+    color: #333;
+  }
+
+  .class-option-name.selected {
+    color: #535bf2;
+  }
+
+  .class-option-btn {
+    color: #666;
+  }
+
+  .class-option-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #333;
+  }
+
+  .class-option-btn.delete:hover {
+    background-color: rgba(211, 47, 47, 0.1);
+    color: #d32f2f;
+  }
+
+  .class-selector-divider {
+    background-color: #ddd;
+  }
+
+  .class-selector-add {
+    border-color: #ddd;
+    color: #535bf2;
+  }
+
+  .class-selector-add:hover {
+    background-color: rgba(83, 91, 242, 0.1);
+    border-color: #535bf2;
+  }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .class-selector {
+    min-width: 0;
+    width: 100%;
+    max-width: none;
+  }
+
+  .class-option-actions {
+    opacity: 1;
+  }
+}
