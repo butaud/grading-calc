@@ -250,8 +250,9 @@
 
 /* Table Styles */
 .grades-table {
-  overflow-x: auto;
+  overflow: auto;
   margin-top: 1rem;
+  max-height: calc(100vh - 300px);
 }
 
 table {
@@ -1047,6 +1048,9 @@ tfoot .stats-row:hover {
 
   .grades-table {
     font-size: 0.9em;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: visible;
   }
 
   .grade-input {
