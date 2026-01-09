@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Assignment, Student, Grade, LetterGrade } from '../types';
-import { getLetterGrade, getLetterGradeColor } from '../utils';
+import { getLetterGrade, getLetterGradeColor, getLetterGradeColorWithAlpha } from '../utils';
 
 interface AssignmentListProps {
   assignments: Assignment[];
@@ -106,11 +106,41 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
           {filteredAssignments.map((assignment) => {
             const totalPoints = assignment.items.reduce((sum, item) => sum + item.maxPoints, 0);
             const stats = calculateStats(assignment);
+
+            // Calculate grade distribution
+            const distribution = new Map<string, number>();
+            if (letterGrades.length > 0 && students.length > 0) {
+              students.forEach((student) => {
+                let total = 0;
+                let studentMax = 0;
+
+                assignment.items.forEach((item) => {
+                  const grade = grades.find((g) => g.studentId === student.id && g.assignmentId === assignment.id);
+                  const points = grade?.itemGrades[item.id];
+                  if (points != null) {
+                    total += points;
+                    studentMax += item.maxPoints;
+                  }
+                });
+
+                if (studentMax > 0) {
+                  const percentage = (total / studentMax) * 100;
+                  const letterGrade = getLetterGrade(percentage, letterGrades);
+                  if (letterGrade) {
+                    distribution.set(letterGrade, (distribution.get(letterGrade) || 0) + 1);
+                  }
+                }
+              });
+            }
+
+            const sorted = [...letterGrades].sort((a, b) => b.threshold - a.threshold);
+
             return (
               <div
                 key={assignment.id}
                 className="assignment-card"
                 onClick={() => onSelectAssignment(assignment.id)}
+                style={{ position: 'relative', paddingBottom: distribution.size > 0 ? '2rem' : undefined }}
               >
                 <h3>{assignment.name}</h3>
                 <div className="assignment-card-meta">
@@ -145,6 +175,47 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
                       <span className="stat-label">Completion:</span>
                       <span className="stat-value">{stats.completion.toFixed(0)}%</span>
                     </div>
+                  </div>
+                )}
+                {distribution.size > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '-12px',
+                    left: '1rem',
+                    right: '1rem',
+                    display: 'flex',
+                    gap: '0.5rem',
+                    flexWrap: 'wrap',
+                    pointerEvents: 'none'
+                  }}>
+                    {sorted.map((lg) => {
+                      const count = distribution.get(lg.letter);
+                      if (!count) return null;
+
+                      const color = getLetterGradeColor(lg.letter, letterGrades);
+                      const bgColor = getLetterGradeColorWithAlpha(lg.letter, letterGrades, 0.15);
+
+                      return (
+                        <div
+                          key={lg.letter}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            padding: '0.25rem 0.6rem',
+                            borderRadius: '12px',
+                            backgroundColor: bgColor || '#333',
+                            border: `1px solid ${color || '#555'}`,
+                            fontSize: '0.85rem',
+                            fontWeight: '600',
+                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                          }}
+                        >
+                          <span style={{ color: color || undefined }}>{lg.letter}</span>
+                          <span style={{ color: '#888' }}>×{count}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
