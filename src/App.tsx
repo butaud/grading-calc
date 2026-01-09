@@ -350,6 +350,7 @@ function App() {
                 onAddStudent={handleAddStudent}
                 onDeleteStudent={handleDeleteStudent}
                 onRenameStudent={handleRenameStudent}
+                onSelectAssignment={setSelectedAssignmentId}
               />
             )}
           </>

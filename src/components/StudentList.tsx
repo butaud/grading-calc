@@ -10,6 +10,7 @@ interface StudentListProps {
   onAddStudent: (name: string) => void;
   onDeleteStudent: (id: string) => void;
   onRenameStudent: (id: string, newName: string) => void;
+  onSelectAssignment: (assignmentId: string) => void;
 }
 
 export function StudentList({
@@ -19,7 +20,8 @@ export function StudentList({
   letterGrades,
   onAddStudent,
   onDeleteStudent,
-  onRenameStudent
+  onRenameStudent,
+  onSelectAssignment
 }: StudentListProps) {
   const [newStudentName, setNewStudentName] = useState('');
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
@@ -186,6 +188,7 @@ export function StudentList({
                             key={assignment.id}
                             className={`grade-grid-cell ${colorClass}`}
                             title={`${assignment.name}: ${status.hasGrade ? `${status.percentage?.toFixed(1)}%` : 'No grade'}`}
+                            onClick={() => onSelectAssignment(assignment.id)}
                           />
                         );
                       })}

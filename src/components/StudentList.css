@@ -95,12 +95,13 @@
   width: 16px;
   height: 16px;
   border-radius: 3px;
-  transition: transform 0.1s;
-  cursor: help;
+  transition: transform 0.1s, opacity 0.1s;
+  cursor: pointer;
 }
 
 .grade-grid-cell:hover {
-  transform: scale(1.2);
+  transform: scale(1.3);
+  opacity: 0.8;
 }
 
 .grade-grid-cell.no-grade {
