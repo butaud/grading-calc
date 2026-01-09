@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { LetterGrade } from '../types';
+import { getLetterGradeColor } from '../utils';
 
 interface LetterGradeSettingsProps {
   letterGrades: LetterGrade[];
@@ -65,35 +66,63 @@ export function LetterGradeSettings({ letterGrades, onUpdateLetterGrades }: Lett
       <p className="hint">Define letter grades and their minimum percentage thresholds.</p>
 
       <div className="letter-grades-list">
-        {editedGrades.map((grade, index) => (
-          <div key={index} className="letter-grade-row">
-            <input
-              type="text"
-              value={grade.letter}
-              onChange={(e) => handleGradeChange(index, 'letter', e.target.value)}
-              placeholder="A+"
-              className="input letter-input"
-              maxLength={2}
-            />
-            <span className="threshold-label">≥</span>
-            <input
-              type="number"
-              value={grade.threshold}
-              onChange={(e) => handleGradeChange(index, 'threshold', e.target.value)}
-              placeholder="90"
-              className="input threshold-input"
-              min="0"
-              max="100"
-              step="0.1"
-            />
-            <span className="threshold-label">%</span>
-            {editedGrades.length > 1 && (
-              <button onClick={() => handleRemoveGrade(index)} className="delete-btn small">
-                Remove
-              </button>
-            )}
-          </div>
-        ))}
+        {editedGrades.map((grade, index) => {
+          // Create a preview of what colors would be if saved
+          const validGrades = editedGrades.filter(
+            (g) => g.letter.trim() && g.threshold.trim() && !isNaN(Number(g.threshold))
+          );
+          const previewGrades: LetterGrade[] = validGrades.map((g) => ({
+            letter: g.letter.trim(),
+            threshold: Number(g.threshold)
+          }));
+          previewGrades.sort((a, b) => b.threshold - a.threshold);
+
+          const color = grade.letter.trim() && previewGrades.find(lg => lg.letter === grade.letter)
+            ? getLetterGradeColor(grade.letter, previewGrades)
+            : null;
+
+          return (
+            <div key={index} className="letter-grade-row">
+              <div
+                className="grade-color-preview"
+                style={{
+                  backgroundColor: color || 'transparent',
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '4px',
+                  flexShrink: 0,
+                  border: color ? 'none' : '1px dashed #444'
+                }}
+                title={color ? `Color for ${grade.letter}` : 'Color preview (enter valid grade)'}
+              />
+              <input
+                type="text"
+                value={grade.letter}
+                onChange={(e) => handleGradeChange(index, 'letter', e.target.value)}
+                placeholder="A+"
+                className="input letter-input"
+                maxLength={2}
+              />
+              <span className="threshold-label">≥</span>
+              <input
+                type="number"
+                value={grade.threshold}
+                onChange={(e) => handleGradeChange(index, 'threshold', e.target.value)}
+                placeholder="90"
+                className="input threshold-input"
+                min="0"
+                max="100"
+                step="0.1"
+              />
+              <span className="threshold-label">%</span>
+              {editedGrades.length > 1 && (
+                <button onClick={() => handleRemoveGrade(index)} className="delete-btn small">
+                  Remove
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div className="button-group">
