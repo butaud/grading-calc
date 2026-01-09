@@ -184,38 +184,66 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
                     left: '1rem',
                     right: '1rem',
                     display: 'flex',
-                    gap: '0.5rem',
+                    gap: '0.4rem',
                     flexWrap: 'wrap',
                     pointerEvents: 'none'
                   }}>
-                    {sorted.map((lg) => {
-                      const count = distribution.get(lg.letter);
-                      if (!count) return null;
-
-                      const color = getLetterGradeColor(lg.letter, letterGrades);
-                      const bgColor = getLetterGradeColorWithAlpha(lg.letter, letterGrades, 0.15);
+                    {(() => {
+                      const gradesWithCounts = sorted.filter(lg => distribution.get(lg.letter));
+                      const maxDisplay = 5;
+                      const showEllipsis = gradesWithCounts.length > maxDisplay + 1;
+                      const displayGrades = showEllipsis ? gradesWithCounts.slice(0, maxDisplay) : gradesWithCounts;
 
                       return (
-                        <div
-                          key={lg.letter}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                            padding: '0.25rem 0.6rem',
-                            borderRadius: '12px',
-                            backgroundColor: bgColor || '#333',
-                            border: `1px solid ${color || '#555'}`,
-                            fontSize: '0.85rem',
-                            fontWeight: '600',
-                            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
-                          }}
-                        >
-                          <span style={{ color: color || undefined }}>{lg.letter}</span>
-                          <span style={{ color: '#888' }}>×{count}</span>
-                        </div>
+                        <>
+                          {displayGrades.map((lg) => {
+                            const count = distribution.get(lg.letter);
+                            const color = getLetterGradeColor(lg.letter, letterGrades);
+                            const bgColor = getLetterGradeColorWithAlpha(lg.letter, letterGrades, 0.15);
+
+                            return (
+                              <div
+                                key={lg.letter}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.2rem',
+                                  padding: '0.2rem 0.5rem',
+                                  borderRadius: '10px',
+                                  backgroundColor: bgColor || '#333',
+                                  border: `1px solid ${color || '#555'}`,
+                                  fontSize: '0.8rem',
+                                  fontWeight: '600',
+                                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                <span style={{ color: color || undefined }}>{lg.letter}</span>
+                                <span style={{ color: '#888' }}>×{count}</span>
+                              </div>
+                            );
+                          })}
+                          {showEllipsis && (
+                            <div
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '10px',
+                                backgroundColor: '#333',
+                                border: '1px solid #555',
+                                fontSize: '0.8rem',
+                                fontWeight: '600',
+                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                                color: '#888'
+                              }}
+                            >
+                              +{gradesWithCounts.length - maxDisplay}
+                            </div>
+                          )}
+                        </>
                       );
-                    })}
+                    })()}
                   </div>
                 )}
               </div>
