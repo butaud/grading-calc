@@ -150,10 +150,11 @@ function App() {
     });
   };
 
-  const handleAddAssignment = (name: string, items: GradeItem[]) => {
+  const handleAddAssignment = (name: string, date: string, items: GradeItem[]) => {
     const newAssignment: Assignment = {
       id: generateId(),
       name,
+      date,
       items
     };
     updateCurrentClass({ assignments: [...assignments, newAssignment] });

@@ -13,6 +13,13 @@ interface AssignmentListProps {
 
 export function AssignmentList({ assignments, students, grades, letterGrades, onSelectAssignment, onAddAssignment }: AssignmentListProps) {
   const [filterText, setFilterText] = useState('');
+  const [sortAscending, setSortAscending] = useState(false); // false = descending (newest first)
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
   const calculateStats = (assignment: Assignment) => {
     if (students.length === 0) {
       return { mean: 0, median: 0, completion: 0, meanLetterGrade: null, medianLetterGrade: null };
@@ -65,14 +72,29 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
     return { mean, median, completion, meanLetterGrade, medianLetterGrade };
   };
 
-  const filteredAssignments = assignments.filter(assignment =>
-    assignment.name.toLowerCase().includes(filterText.toLowerCase())
-  );
+  const filteredAssignments = assignments
+    .filter(assignment => assignment.name.toLowerCase().includes(filterText.toLowerCase()))
+    .sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return sortAscending ? dateA - dateB : dateB - dateA;
+    });
 
   return (
     <div className="assignment-list-view">
       <div className="view-header">
-        <h2>Assignments</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h2>Assignments</h2>
+          {assignments.length > 0 && (
+            <button
+              onClick={() => setSortAscending(!sortAscending)}
+              className="sort-arrow-btn"
+              title={sortAscending ? 'Oldest first (click for newest first)' : 'Newest first (click for oldest first)'}
+            >
+              {sortAscending ? '↑' : '↓'}
+            </button>
+          )}
+        </div>
         <button onClick={onAddAssignment} className="primary-btn">
           Add Assignment
         </button>
@@ -144,6 +166,7 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
               >
                 <h3>{assignment.name}</h3>
                 <div className="assignment-card-meta">
+                  <span className="assignment-date">{formatDate(assignment.date)}</span>
                   <span className="point-count">{totalPoints} points total</span>
                   <span className="contributor-count">
                     {assignment.items.length} item{assignment.items.length !== 1 ? 's' : ''}

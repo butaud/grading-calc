@@ -3,12 +3,13 @@ import type { GradeItem } from '../types';
 import { generateId } from '../utils';
 
 interface AddAssignmentModalProps {
-  onAddAssignment: (name: string, items: GradeItem[]) => void;
+  onAddAssignment: (name: string, date: string, items: GradeItem[]) => void;
   onClose: () => void;
 }
 
 export function AddAssignmentModal({ onAddAssignment, onClose }: AddAssignmentModalProps) {
   const [assignmentName, setAssignmentName] = useState('');
+  const [assignmentDate, setAssignmentDate] = useState(new Date().toISOString().split('T')[0]);
   const [items, setItems] = useState<Array<{ name: string; maxPoints: string }>>([
     { name: '', maxPoints: '' }
   ]);
@@ -49,7 +50,7 @@ export function AddAssignmentModal({ onAddAssignment, onClose }: AddAssignmentMo
       maxPoints: Number(item.maxPoints)
     }));
 
-    onAddAssignment(assignmentName.trim(), gradeItems);
+    onAddAssignment(assignmentName.trim(), assignmentDate, gradeItems);
     onClose();
   };
 
@@ -73,6 +74,16 @@ export function AddAssignmentModal({ onAddAssignment, onClose }: AddAssignmentMo
               placeholder="e.g., Midterm Exam, Homework 1"
               className="input"
               autoFocus
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Date</label>
+            <input
+              type="date"
+              value={assignmentDate}
+              onChange={(e) => setAssignmentDate(e.target.value)}
+              className="input"
             />
           </div>
 

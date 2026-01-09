@@ -1,7 +1,7 @@
 import type { LetterGrade, Class } from './types';
 import { generateId } from './utils';
 
-export const CURRENT_VERSION = 2;
+export const CURRENT_VERSION = 3;
 
 export interface AppData {
   version: number;
@@ -51,10 +51,33 @@ const migration1to2: Migration = (data: any) => {
   };
 };
 
+// Migration 2 -> 3: Add date field to assignments
+const migration2to3: Migration = (data: any) => {
+  // If data doesn't have classes, skip (shouldn't happen after migration1to2)
+  if (!data.classes) {
+    return data;
+  }
+
+  const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+  return {
+    ...data,
+    version: 3,
+    classes: data.classes.map((cls: Class) => ({
+      ...cls,
+      assignments: cls.assignments.map((assignment: any) => ({
+        ...assignment,
+        date: assignment.date || currentDate
+      }))
+    }))
+  };
+};
+
 // Array of migrations in order
 const migrations: Migration[] = [
   migration0to1,
-  migration1to2
+  migration1to2,
+  migration2to3
 ];
 
 /**

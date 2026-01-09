@@ -25,6 +25,7 @@ export function AssignmentDetail({
 }: AssignmentDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment.name);
+  const [editedDate, setEditedDate] = useState(assignment.date);
   const [editedItems, setEditedItems] = useState<GradeItem[]>(assignment.items);
   const [sortColumn, setSortColumn] = useState<'name' | 'score'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -42,6 +43,7 @@ export function AssignmentDetail({
 
   const handleStartEdit = () => {
     setEditedName(assignment.name);
+    setEditedDate(assignment.date);
     setEditedItems([...assignment.items]);
     setIsEditing(true);
   };
@@ -70,6 +72,7 @@ export function AssignmentDetail({
     const updatedAssignment: Assignment = {
       ...assignment,
       name: editedName.trim(),
+      date: editedDate,
       items: validItems
     };
 
@@ -408,6 +411,16 @@ export function AssignmentDetail({
               type="text"
               value={editedName}
               onChange={(e) => setEditedName(e.target.value)}
+              className="input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Date</label>
+            <input
+              type="date"
+              value={editedDate}
+              onChange={(e) => setEditedDate(e.target.value)}
               className="input"
             />
           </div>

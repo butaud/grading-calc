@@ -180,18 +180,20 @@ export function StudentList({
                     <p className="grid-empty">No assignments yet</p>
                   ) : (
                     <div className="grade-grid">
-                      {assignments.map(assignment => {
-                        const status = getStudentGradeStatus(student.id, assignment.id);
-                        const colorClass = getGridCellColor(status.hasGrade, status.percentage);
-                        return (
-                          <div
-                            key={assignment.id}
-                            className={`grade-grid-cell ${colorClass}`}
-                            title={`${assignment.name}: ${status.hasGrade ? `${status.percentage?.toFixed(1)}%` : 'No grade'}`}
-                            onClick={() => onSelectAssignment(assignment.id)}
-                          />
-                        );
-                      })}
+                      {[...assignments]
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                        .map(assignment => {
+                          const status = getStudentGradeStatus(student.id, assignment.id);
+                          const colorClass = getGridCellColor(status.hasGrade, status.percentage);
+                          return (
+                            <div
+                              key={assignment.id}
+                              className={`grade-grid-cell ${colorClass}`}
+                              title={`${assignment.name}: ${status.hasGrade ? `${status.percentage?.toFixed(1)}%` : 'No grade'}`}
+                              onClick={() => onSelectAssignment(assignment.id)}
+                            />
+                          );
+                        })}
                     </div>
                   )}
                 </div>

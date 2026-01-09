@@ -17,6 +17,7 @@ export interface GradeItem {
 export interface Assignment {
   id: string;
   name: string;
+  date: string; // ISO date string
   items: GradeItem[];
 }
 
