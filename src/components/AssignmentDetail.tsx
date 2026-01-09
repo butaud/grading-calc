@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Student, Assignment, Grade, GradeItem, LetterGrade } from '../types';
-import { generateId, getLetterGrade, getLetterGradeColor } from '../utils';
+import { generateId, getLetterGrade, getLetterGradeColor, getLetterGradeColorWithAlpha } from '../utils';
 
 interface AssignmentDetailProps {
   assignment: Assignment;
@@ -521,13 +521,13 @@ export function AssignmentDetail({
                         const grade = getGrade(student.id, item.id);
                         const itemPercentage = grade != null && item.maxPoints > 0 ? (grade / item.maxPoints) * 100 : null;
                         const itemLetterGrade = itemPercentage != null ? getLetterGrade(itemPercentage, letterGrades) : null;
-                        const bgColor = itemLetterGrade ? getLetterGradeColor(itemLetterGrade, letterGrades) : null;
+                        const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.15) : null;
 
                         return (
                           <td
                             key={item.id}
                             style={{
-                              backgroundColor: bgColor ? `${bgColor}15` : undefined
+                              backgroundColor: bgColor || undefined
                             }}
                           >
                             <input
@@ -548,7 +548,7 @@ export function AssignmentDetail({
                       <td
                         className="total-cell sticky-total-col"
                         style={{
-                          backgroundColor: letterGrade ? `${getLetterGradeColor(letterGrade, letterGrades)}15` : undefined
+                          backgroundColor: letterGrade ? getLetterGradeColorWithAlpha(letterGrade, letterGrades, 0.15) || undefined : undefined
                         }}
                       >
                         {studentMax > 0 ? (
@@ -574,13 +574,13 @@ export function AssignmentDetail({
                     const itemAverage = calculateAverage(item.id);
                     const itemPercentage = calculatePercentage(item.id);
                     const itemLetterGrade = getLetterGrade(itemPercentage, letterGrades);
-                    const bgColor = itemLetterGrade ? getLetterGradeColor(itemLetterGrade, letterGrades) : null;
+                    const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.15) : null;
                     return (
                       <td
                         key={item.id}
                         className="stats-cell"
                         style={{
-                          backgroundColor: bgColor ? `${bgColor}15` : undefined
+                          backgroundColor: bgColor || undefined
                         }}
                       >
                         {itemAverage.toFixed(2)}<br />
@@ -594,7 +594,7 @@ export function AssignmentDetail({
                       backgroundColor: (() => {
                         const overallPercentage = calculatePercentage();
                         const letterGrade = getLetterGrade(overallPercentage, letterGrades);
-                        return letterGrade ? `${getLetterGradeColor(letterGrade, letterGrades)}15` : undefined;
+                        return letterGrade ? getLetterGradeColorWithAlpha(letterGrade, letterGrades, 0.15) || undefined : undefined;
                       })()
                     }}
                   >
@@ -616,13 +616,13 @@ export function AssignmentDetail({
                     const itemMedian = calculateMedian(item.id);
                     const itemMedianPercentage = calculateMedianPercentage(item.id);
                     const itemLetterGrade = getLetterGrade(itemMedianPercentage, letterGrades);
-                    const bgColor = itemLetterGrade ? getLetterGradeColor(itemLetterGrade, letterGrades) : null;
+                    const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.15) : null;
                     return (
                       <td
                         key={item.id}
                         className="stats-cell"
                         style={{
-                          backgroundColor: bgColor ? `${bgColor}15` : undefined
+                          backgroundColor: bgColor || undefined
                         }}
                       >
                         {itemMedian.toFixed(2)}<br />
@@ -636,7 +636,7 @@ export function AssignmentDetail({
                       backgroundColor: (() => {
                         const overallMedianPercentage = calculateMedianPercentage();
                         const letterGrade = getLetterGrade(overallMedianPercentage, letterGrades);
-                        return letterGrade ? `${getLetterGradeColor(letterGrade, letterGrades)}15` : undefined;
+                        return letterGrade ? getLetterGradeColorWithAlpha(letterGrade, letterGrades, 0.15) || undefined : undefined;
                       })()
                     }}
                   >

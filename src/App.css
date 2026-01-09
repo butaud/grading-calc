@@ -697,6 +697,7 @@ tfoot .stats-row:hover {
     position: sticky;
     left: 0;
     z-index: 1;
+    background-color: #1a1a1a;
   }
 
   /* Sticky total column (last column) */
@@ -704,13 +705,10 @@ tfoot .stats-row:hover {
     position: sticky;
     right: 0;
     z-index: 1;
-  }
-
-  /* Default background for sticky columns without grade coloring */
-  tbody .sticky-name-col {
     background-color: #1a1a1a;
   }
 
+  /* Header sticky columns */
   thead .sticky-name-col,
   thead .sticky-total-col {
     background-color: #333;
@@ -989,7 +987,11 @@ tfoot .stats-row:hover {
 
   /* Sticky table columns (desktop only) - light mode colors */
   @media (min-width: 769px) {
-    tbody .sticky-name-col {
+    .sticky-name-col {
+      background-color: white;
+    }
+
+    .sticky-total-col {
       background-color: white;
     }
 
