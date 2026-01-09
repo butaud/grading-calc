@@ -472,7 +472,70 @@ export function AssignmentDetail({
 
       {!isEditing && <div className="detail-sections">
         <section className="grades-section">
-          <h3>Student Grades</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+            <h3 style={{ margin: 0 }}>Student Grades</h3>
+            {letterGrades.length > 0 && (() => {
+              // Calculate grade distribution
+              const distribution = new Map<string, number>();
+
+              students.forEach((student) => {
+                let total = 0;
+                let studentMax = 0;
+
+                assignment.items.forEach((item) => {
+                  const grade = grades.find((g) => g.studentId === student.id && g.assignmentId === assignment.id)?.itemGrades[item.id];
+                  if (grade != null) {
+                    total += grade;
+                    studentMax += item.maxPoints;
+                  }
+                });
+
+                if (studentMax > 0) {
+                  const percentage = (total / studentMax) * 100;
+                  const letterGrade = getLetterGrade(percentage, letterGrades);
+                  if (letterGrade) {
+                    distribution.set(letterGrade, (distribution.get(letterGrade) || 0) + 1);
+                  }
+                }
+              });
+
+              // Sort by letter grade thresholds (highest first)
+              const sorted = [...letterGrades].sort((a, b) => b.threshold - a.threshold);
+
+              return (
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {sorted.map((lg) => {
+                    const count = distribution.get(lg.letter);
+                    if (!count) return null;
+
+                    const color = getLetterGradeColor(lg.letter, letterGrades);
+
+                    const bgColor = getLetterGradeColorWithAlpha(lg.letter, letterGrades, 0.15);
+
+                    return (
+                      <div
+                        key={lg.letter}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '12px',
+                          backgroundColor: bgColor || '#333',
+                          border: `1px solid ${color || '#555'}`,
+                          fontSize: '0.9rem',
+                          fontWeight: '600'
+                        }}
+                      >
+                        <span style={{ color: color || undefined }}>{lg.letter}</span>
+                        <span style={{ color: '#888' }}>×{count}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
           <div className="grades-table">
             <table>
               <thead>
