@@ -296,7 +296,7 @@ tr:hover {
   padding: 0.4em 0.6em;
   border: 1px solid #444;
   border-radius: 4px;
-  background-color: #2a2a2a;
+  background-color: transparent;
   color: white;
   font-size: 0.95rem;
 }
@@ -697,7 +697,6 @@ tfoot .stats-row:hover {
     position: sticky;
     left: 0;
     z-index: 1;
-    background-color: #1a1a1a;
   }
 
   /* Sticky total column (last column) */
@@ -705,7 +704,16 @@ tfoot .stats-row:hover {
     position: sticky;
     right: 0;
     z-index: 1;
+  }
+
+  /* Default background for sticky columns without grade coloring */
+  tbody .sticky-name-col {
     background-color: #1a1a1a;
+  }
+
+  thead .sticky-name-col,
+  thead .sticky-total-col {
+    background-color: #333;
   }
 
   /* Higher z-index for header sticky columns */
@@ -837,7 +845,7 @@ tfoot .stats-row:hover {
   }
 
   .grade-input {
-    background-color: white;
+    background-color: transparent;
     border-color: #ddd;
     color: black;
   }
@@ -981,11 +989,7 @@ tfoot .stats-row:hover {
 
   /* Sticky table columns (desktop only) - light mode colors */
   @media (min-width: 769px) {
-    .sticky-name-col {
-      background-color: white;
-    }
-
-    .sticky-total-col {
+    tbody .sticky-name-col {
       background-color: white;
     }
 

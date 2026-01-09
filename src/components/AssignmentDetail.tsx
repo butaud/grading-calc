@@ -517,23 +517,40 @@ export function AssignmentDetail({
                   return (
                     <tr key={student.id}>
                       <td className="sticky-name-col">{student.name}</td>
-                      {assignment.items.map((item, itemIndex) => (
-                        <td key={item.id}>
-                          <input
-                            type="number"
-                            value={getGrade(student.id, item.id) ?? ''}
-                            onChange={(e) => handleGradeChange(student.id, item.id, e.target.value)}
-                            onKeyDown={(e) => handleKeyDown(e, studentIndex, itemIndex)}
-                            data-student-index={studentIndex}
-                            data-item-index={itemIndex}
-                            className="grade-input"
-                            min="0"
-                            max={item.maxPoints}
-                            step="0.01"
-                          />
-                        </td>
-                      ))}
-                      <td className="total-cell sticky-total-col">
+                      {assignment.items.map((item, itemIndex) => {
+                        const grade = getGrade(student.id, item.id);
+                        const itemPercentage = grade != null && item.maxPoints > 0 ? (grade / item.maxPoints) * 100 : null;
+                        const itemLetterGrade = itemPercentage != null ? getLetterGrade(itemPercentage, letterGrades) : null;
+                        const bgColor = itemLetterGrade ? getLetterGradeColor(itemLetterGrade, letterGrades) : null;
+
+                        return (
+                          <td
+                            key={item.id}
+                            style={{
+                              backgroundColor: bgColor ? `${bgColor}15` : undefined
+                            }}
+                          >
+                            <input
+                              type="number"
+                              value={grade ?? ''}
+                              onChange={(e) => handleGradeChange(student.id, item.id, e.target.value)}
+                              onKeyDown={(e) => handleKeyDown(e, studentIndex, itemIndex)}
+                              data-student-index={studentIndex}
+                              data-item-index={itemIndex}
+                              className="grade-input"
+                              min="0"
+                              max={item.maxPoints}
+                              step="0.01"
+                            />
+                          </td>
+                        );
+                      })}
+                      <td
+                        className="total-cell sticky-total-col"
+                        style={{
+                          backgroundColor: letterGrade ? `${getLetterGradeColor(letterGrade, letterGrades)}15` : undefined
+                        }}
+                      >
                         {studentMax > 0 ? (
                           <>
                             {total.toFixed(2)} / {studentMax} ({percentage.toFixed(1)}%{letterGrade && (
@@ -556,14 +573,31 @@ export function AssignmentDetail({
                   {assignment.items.map((item) => {
                     const itemAverage = calculateAverage(item.id);
                     const itemPercentage = calculatePercentage(item.id);
+                    const itemLetterGrade = getLetterGrade(itemPercentage, letterGrades);
+                    const bgColor = itemLetterGrade ? getLetterGradeColor(itemLetterGrade, letterGrades) : null;
                     return (
-                      <td key={item.id} className="stats-cell">
+                      <td
+                        key={item.id}
+                        className="stats-cell"
+                        style={{
+                          backgroundColor: bgColor ? `${bgColor}15` : undefined
+                        }}
+                      >
                         {itemAverage.toFixed(2)}<br />
                         <span className="stats-percentage">({itemPercentage.toFixed(1)}%)</span>
                       </td>
                     );
                   })}
-                  <td className="stats-cell stats-overall sticky-total-col">
+                  <td
+                    className="stats-cell stats-overall sticky-total-col"
+                    style={{
+                      backgroundColor: (() => {
+                        const overallPercentage = calculatePercentage();
+                        const letterGrade = getLetterGrade(overallPercentage, letterGrades);
+                        return letterGrade ? `${getLetterGradeColor(letterGrade, letterGrades)}15` : undefined;
+                      })()
+                    }}
+                  >
                     {calculatePercentage().toFixed(1)}%
                     {letterGrades.length > 0 && (() => {
                       const overallPercentage = calculatePercentage();
@@ -581,14 +615,31 @@ export function AssignmentDetail({
                   {assignment.items.map((item) => {
                     const itemMedian = calculateMedian(item.id);
                     const itemMedianPercentage = calculateMedianPercentage(item.id);
+                    const itemLetterGrade = getLetterGrade(itemMedianPercentage, letterGrades);
+                    const bgColor = itemLetterGrade ? getLetterGradeColor(itemLetterGrade, letterGrades) : null;
                     return (
-                      <td key={item.id} className="stats-cell">
+                      <td
+                        key={item.id}
+                        className="stats-cell"
+                        style={{
+                          backgroundColor: bgColor ? `${bgColor}15` : undefined
+                        }}
+                      >
                         {itemMedian.toFixed(2)}<br />
                         <span className="stats-percentage">({itemMedianPercentage.toFixed(1)}%)</span>
                       </td>
                     );
                   })}
-                  <td className="stats-cell stats-overall sticky-total-col">
+                  <td
+                    className="stats-cell stats-overall sticky-total-col"
+                    style={{
+                      backgroundColor: (() => {
+                        const overallMedianPercentage = calculateMedianPercentage();
+                        const letterGrade = getLetterGrade(overallMedianPercentage, letterGrades);
+                        return letterGrade ? `${getLetterGradeColor(letterGrade, letterGrades)}15` : undefined;
+                      })()
+                    }}
+                  >
                     {calculateMedianPercentage().toFixed(1)}%
                     {letterGrades.length > 0 && (() => {
                       const overallMedianPercentage = calculateMedianPercentage();
