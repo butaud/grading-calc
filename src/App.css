@@ -138,18 +138,29 @@
   color: #aaa;
 }
 
-.assignment-card-contributors {
+.assignment-card-stats {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #333;
 }
 
-.contributor-chip {
-  background-color: #333;
-  padding: 0.3em 0.8em;
-  border-radius: 12px;
-  font-size: 0.85em;
-  color: #ccc;
+.assignment-card-stats .stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9em;
+}
+
+.assignment-card-stats .stat-label {
+  color: #aaa;
+  font-weight: 500;
+}
+
+.assignment-card-stats .stat-value {
+  color: #646cff;
+  font-weight: 600;
 }
 
 /* Assignment Detail View */
@@ -707,9 +718,16 @@ tfoot .stats-row:hover {
     color: #666;
   }
 
-  .contributor-chip {
-    background-color: #e0e0e0;
-    color: #333;
+  .assignment-card-stats {
+    border-top-color: #e0e0e0;
+  }
+
+  .assignment-card-stats .stat-label {
+    color: #666;
+  }
+
+  .assignment-card-stats .stat-value {
+    color: #535bf2;
   }
 
   .back-btn {

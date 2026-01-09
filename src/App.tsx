@@ -204,6 +204,9 @@ function App() {
         ) : (
           <AssignmentList
             assignments={assignments}
+            students={students}
+            grades={grades}
+            letterGrades={letterGrades}
             onSelectAssignment={setSelectedAssignmentId}
             onAddAssignment={() => setShowAddAssignment(true)}
           />
