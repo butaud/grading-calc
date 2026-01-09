@@ -44,9 +44,31 @@
   font-size: 1.2em;
 }
 
-.student-card-actions {
-  display: flex;
-  gap: 0.5rem;
+.student-name-editable {
+  cursor: pointer;
+  transition: color 0.2s;
+  flex: 1;
+}
+
+.student-name-editable:hover {
+  color: #646cff;
+}
+
+.student-name-input {
+  flex: 1;
+  background-color: #1a1a1a;
+  border: 2px solid #646cff;
+  border-radius: 4px;
+  padding: 0.5rem;
+  color: white;
+  font-size: 1.2em;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.student-name-input:focus {
+  outline: none;
+  border-color: #535bf2;
 }
 
 .student-card-stats {
@@ -183,6 +205,20 @@
     color: black;
   }
 
+  .student-name-editable:hover {
+    color: #535bf2;
+  }
+
+  .student-name-input {
+    background-color: white;
+    border-color: #535bf2;
+    color: black;
+  }
+
+  .student-name-input:focus {
+    border-color: #424ad6;
+  }
+
   .student-card-stats {
     border-top-color: #e0e0e0;
     border-bottom-color: #e0e0e0;
@@ -232,20 +268,17 @@
   }
 
   .student-card-header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 0.75rem;
   }
 
-  .student-card-header h3 {
-    width: 100%;
+  .student-name-editable,
+  .student-name-input {
+    flex: 1 1 100%;
+    min-width: 0;
   }
 
-  .student-card-actions {
-    width: 100%;
-  }
-
-  .student-card-actions button {
+  .student-card-header button {
     flex: 1;
   }
 

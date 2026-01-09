@@ -22,6 +22,8 @@ export function StudentList({
   onRenameStudent
 }: StudentListProps) {
   const [newStudentName, setNewStudentName] = useState('');
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +31,24 @@ export function StudentList({
       onAddStudent(newStudentName.trim());
       setNewStudentName('');
     }
+  };
+
+  const startEditing = (student: Student) => {
+    setEditingStudentId(student.id);
+    setEditingName(student.name);
+  };
+
+  const saveEdit = (studentId: string) => {
+    if (editingName.trim() && editingName !== students.find(s => s.id === studentId)?.name) {
+      onRenameStudent(studentId, editingName.trim());
+    }
+    setEditingStudentId(null);
+    setEditingName('');
+  };
+
+  const cancelEdit = () => {
+    setEditingStudentId(null);
+    setEditingName('');
   };
 
   const getStudentGradeStatus = (studentId: string, assignmentId: string): { hasGrade: boolean; percentage: number | null } => {
@@ -115,30 +135,37 @@ export function StudentList({
             return (
               <div key={student.id} className="student-card">
                 <div className="student-card-header">
-                  <h3>{student.name}</h3>
-                  <div className="student-card-actions">
-                    <button
-                      onClick={() => {
-                        const newName = prompt('Enter new name for student:', student.name);
-                        if (newName && newName.trim() && newName !== student.name) {
-                          onRenameStudent(student.id, newName.trim());
+                  {editingStudentId === student.id ? (
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onBlur={() => saveEdit(student.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          saveEdit(student.id);
+                        } else if (e.key === 'Escape') {
+                          cancelEdit();
                         }
                       }}
-                      className="secondary-btn small"
-                    >
-                      Rename
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm(`Are you sure you want to delete ${student.name}? All grades for this student will be lost.`)) {
-                          onDeleteStudent(student.id);
-                        }
-                      }}
-                      className="delete-btn small"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                      className="student-name-input"
+                      autoFocus
+                    />
+                  ) : (
+                    <h3 onClick={() => startEditing(student)} className="student-name-editable">
+                      {student.name}
+                    </h3>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (confirm(`Are you sure you want to delete ${student.name}? All grades for this student will be lost.`)) {
+                        onDeleteStudent(student.id);
+                      }
+                    }}
+                    className="delete-btn small"
+                  >
+                    Delete
+                  </button>
                 </div>
 
                 <div className="student-card-stats">
