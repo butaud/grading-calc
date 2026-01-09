@@ -26,6 +26,7 @@ export function AssignmentDetail({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment.name);
   const [editedItems, setEditedItems] = useState<GradeItem[]>(assignment.items);
+  const [sortBy, setSortBy] = useState<'name' | 'score-asc' | 'score-desc'>('name');
 
   const handleStartEdit = () => {
     setEditedName(assignment.name);
@@ -267,6 +268,36 @@ export function AssignmentDetail({
     }
   };
 
+  const getSortedStudents = () => {
+    const studentsWithScores = students.map((student) => {
+      const grade = grades.find((g) => g.studentId === student.id && g.assignmentId === assignment.id);
+      let total = 0;
+      let studentMax = 0;
+
+      assignment.items.forEach((item) => {
+        const points = grade?.itemGrades[item.id];
+        if (points != null) {
+          total += points;
+          studentMax += item.maxPoints;
+        }
+      });
+
+      const percentage = studentMax > 0 ? (total / studentMax) * 100 : 0;
+
+      return { student, percentage };
+    });
+
+    if (sortBy === 'name') {
+      return studentsWithScores.sort((a, b) => a.student.name.localeCompare(b.student.name)).map(s => s.student);
+    } else if (sortBy === 'score-asc') {
+      return studentsWithScores.sort((a, b) => a.percentage - b.percentage).map(s => s.student);
+    } else {
+      return studentsWithScores.sort((a, b) => b.percentage - a.percentage).map(s => s.student);
+    }
+  };
+
+  const sortedStudents = getSortedStudents();
+
   if (students.length === 0) {
     return (
       <div className="assignment-detail-view">
@@ -385,7 +416,30 @@ export function AssignmentDetail({
 
       {!isEditing && <div className="detail-sections">
         <section className="grades-section">
-          <h3>Student Grades</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ margin: 0 }}>Student Grades</h3>
+            <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.9em' }}>
+              <span style={{ color: '#aaa', marginRight: '0.5rem' }}>Sort by:</span>
+              <button
+                onClick={() => setSortBy('name')}
+                className={sortBy === 'name' ? 'sort-btn active' : 'sort-btn'}
+              >
+                Name
+              </button>
+              <button
+                onClick={() => setSortBy('score-desc')}
+                className={sortBy === 'score-desc' ? 'sort-btn active' : 'sort-btn'}
+              >
+                Score ↓
+              </button>
+              <button
+                onClick={() => setSortBy('score-asc')}
+                className={sortBy === 'score-asc' ? 'sort-btn active' : 'sort-btn'}
+              >
+                Score ↑
+              </button>
+            </div>
+          </div>
           <div className="grades-table">
             <table>
               <thead>
@@ -400,7 +454,7 @@ export function AssignmentDetail({
                 </tr>
               </thead>
               <tbody>
-                {students.map((student) => {
+                {sortedStudents.map((student) => {
                   let total = 0;
                   let studentMax = 0;
 
