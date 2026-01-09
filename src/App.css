@@ -164,6 +164,14 @@
   font-weight: 600;
 }
 
+.grade-pill {
+  background-color: #1a1a1a;
+}
+
+.grade-pill-overflow {
+  background-color: #1a1a1a;
+}
+
 /* Assignment Detail View */
 .assignment-detail-view {
   width: 100%;
@@ -782,6 +790,14 @@ tfoot .stats-row:hover {
 
   .assignment-card-stats .stat-value {
     color: #535bf2;
+  }
+
+  .grade-pill {
+    background-color: white;
+  }
+
+  .grade-pill-overflow {
+    background-color: white;
   }
 
   .back-btn {

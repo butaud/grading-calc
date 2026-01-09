@@ -186,6 +186,7 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
                     display: 'flex',
                     gap: '0.4rem',
                     flexWrap: 'wrap',
+                    justifyContent: 'flex-end',
                     pointerEvents: 'none'
                   }}>
                     {(() => {
@@ -204,13 +205,14 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
                             return (
                               <div
                                 key={lg.letter}
+                                className="grade-pill"
                                 style={{
                                   display: 'inline-flex',
                                   alignItems: 'center',
                                   gap: '0.2rem',
                                   padding: '0.2rem 0.5rem',
                                   borderRadius: '10px',
-                                  backgroundColor: bgColor || '#333',
+                                  backgroundImage: bgColor ? `linear-gradient(${bgColor}, ${bgColor})` : undefined,
                                   border: `1px solid ${color || '#555'}`,
                                   fontSize: '0.8rem',
                                   fontWeight: '600',
@@ -225,12 +227,12 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
                           })}
                           {showEllipsis && (
                             <div
+                              className="grade-pill-overflow"
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 padding: '0.2rem 0.5rem',
                                 borderRadius: '10px',
-                                backgroundColor: '#333',
                                 border: '1px solid #555',
                                 fontSize: '0.8rem',
                                 fontWeight: '600',
