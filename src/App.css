@@ -24,6 +24,12 @@
   font-size: 2em;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .settings-btn {
   background-color: rgba(255, 255, 255, 0.2);
   color: white;
@@ -1087,9 +1093,15 @@ tfoot .stats-row:hover {
     text-align: center;
   }
 
+  .header-right {
+    width: 100%;
+    flex-direction: column;
+  }
+
   .settings-btn {
     padding: 0.5em 1em;
     font-size: 0.9rem;
+    width: 100%;
   }
 
   .main {

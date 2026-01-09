@@ -290,17 +290,19 @@ function App() {
     <div className="app">
       <header className="header">
         <h1>Grading Calculator</h1>
-        <ClassSelector
-          classes={classes}
-          selectedClassId={selectedClassId}
-          onSelectClass={setSelectedClassId}
-          onRenameClass={handleRenameClass}
-          onDeleteClass={handleDeleteClass}
-          onAddClass={handleAddClass}
-        />
-        <button onClick={() => setShowSettings(true)} className="settings-btn">
-          ⚙ Settings
-        </button>
+        <div className="header-right">
+          <ClassSelector
+            classes={classes}
+            selectedClassId={selectedClassId}
+            onSelectClass={setSelectedClassId}
+            onRenameClass={handleRenameClass}
+            onDeleteClass={handleDeleteClass}
+            onAddClass={handleAddClass}
+          />
+          <button onClick={() => setShowSettings(true)} className="settings-btn">
+            ⚙ Settings
+          </button>
+        </div>
       </header>
 
       <main className="main">
