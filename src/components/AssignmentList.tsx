@@ -1,5 +1,5 @@
 import type { Assignment, Student, Grade, LetterGrade } from '../types';
-import { getLetterGrade } from '../utils';
+import { getLetterGrade, getLetterGradeColor } from '../utils';
 
 interface AssignmentListProps {
   assignments: Assignment[];
@@ -99,13 +99,21 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
                     <div className="stat-row">
                       <span className="stat-label">Mean:</span>
                       <span className="stat-value">
-                        {stats.mean.toFixed(1)}%{stats.meanLetterGrade ? ` (${stats.meanLetterGrade})` : ''}
+                        {stats.mean.toFixed(1)}%{stats.meanLetterGrade && (
+                          <span style={{ color: getLetterGradeColor(stats.meanLetterGrade, letterGrades) || undefined }}>
+                            {' '}({stats.meanLetterGrade})
+                          </span>
+                        )}
                       </span>
                     </div>
                     <div className="stat-row">
                       <span className="stat-label">Median:</span>
                       <span className="stat-value">
-                        {stats.median.toFixed(1)}%{stats.medianLetterGrade ? ` (${stats.medianLetterGrade})` : ''}
+                        {stats.median.toFixed(1)}%{stats.medianLetterGrade && (
+                          <span style={{ color: getLetterGradeColor(stats.medianLetterGrade, letterGrades) || undefined }}>
+                            {' '}({stats.medianLetterGrade})
+                          </span>
+                        )}
                       </span>
                     </div>
                     <div className="stat-row">

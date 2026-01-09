@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Student, Assignment, Grade, GradeItem, LetterGrade } from '../types';
-import { generateId, getLetterGrade } from '../utils';
+import { generateId, getLetterGrade, getLetterGradeColor } from '../utils';
 
 interface AssignmentDetailProps {
   assignment: Assignment;
@@ -434,7 +434,11 @@ export function AssignmentDetail({
                       <td className="total-cell">
                         {studentMax > 0 ? (
                           <>
-                            {total.toFixed(2)} / {studentMax} ({percentage.toFixed(1)}%{letterGrade ? `, ${letterGrade}` : ''})
+                            {total.toFixed(2)} / {studentMax} ({percentage.toFixed(1)}%{letterGrade && (
+                              <span style={{ color: getLetterGradeColor(letterGrade, letterGrades) || undefined }}>
+                                , {letterGrade}
+                              </span>
+                            )})
                           </>
                         ) : (
                           <span style={{ color: '#888', fontStyle: 'italic' }}>No grades</span>
@@ -462,7 +466,11 @@ export function AssignmentDetail({
                     {letterGrades.length > 0 && (() => {
                       const overallPercentage = calculatePercentage();
                       const letterGrade = getLetterGrade(overallPercentage, letterGrades);
-                      return letterGrade ? ` (${letterGrade})` : '';
+                      return letterGrade ? (
+                        <span style={{ color: getLetterGradeColor(letterGrade, letterGrades) || undefined }}>
+                          {' '}({letterGrade})
+                        </span>
+                      ) : '';
                     })()}
                   </td>
                 </tr>
@@ -483,7 +491,11 @@ export function AssignmentDetail({
                     {letterGrades.length > 0 && (() => {
                       const overallMedianPercentage = calculateMedianPercentage();
                       const letterGrade = getLetterGrade(overallMedianPercentage, letterGrades);
-                      return letterGrade ? ` (${letterGrade})` : '';
+                      return letterGrade ? (
+                        <span style={{ color: getLetterGradeColor(letterGrade, letterGrades) || undefined }}>
+                          {' '}({letterGrade})
+                        </span>
+                      ) : '';
                     })()}
                   </td>
                 </tr>
