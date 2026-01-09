@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { Student, Assignment, Grade, GradeItem, LetterGrade } from './types';
-import { useLocalStorage } from './useLocalStorage';
+import type { Student, Assignment, Grade, GradeItem } from './types';
+import { useAppData } from './useAppData';
 import { generateId } from './utils';
 import { AssignmentList } from './components/AssignmentList';
 import { AssignmentDetail } from './components/AssignmentDetail';
@@ -9,10 +9,19 @@ import { AddAssignmentModal } from './components/AddAssignmentModal';
 import './App.css';
 
 function App() {
-  const [students, setStudents] = useLocalStorage<Student[]>('students', []);
-  const [assignments, setAssignments] = useLocalStorage<Assignment[]>('assignments', []);
-  const [grades, setGrades] = useLocalStorage<Grade[]>('grades', []);
-  const [letterGrades, setLetterGrades] = useLocalStorage<LetterGrade[]>('letterGrades', []);
+  const {
+    students,
+    assignments,
+    grades,
+    letterGrades,
+    version,
+    setStudents,
+    setAssignments,
+    setGrades,
+    setLetterGrades,
+    importData
+  } = useAppData();
+
   const [selectedAssignmentId, setSelectedAssignmentId] = useState<string | null>(() => {
     // Initialize with hash if present
     const hash = window.location.hash.slice(1);
@@ -24,11 +33,11 @@ function App() {
   // Handle import on initial load
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const importData = params.get('import');
+    const importParam = params.get('import');
 
-    if (importData) {
+    if (importParam) {
       try {
-        const decoded = atob(importData);
+        const decoded = atob(importParam);
         const data = JSON.parse(decoded);
 
         // Check if there's existing local data
@@ -36,10 +45,10 @@ function App() {
 
         if (hasExistingData) {
           if (confirm('You have existing data. Do you want to overwrite it with the imported data? This cannot be undone.')) {
-            importAllData(data);
+            importData(data);
           }
         } else {
-          importAllData(data);
+          importData(data);
         }
 
         // Remove import parameter from URL
@@ -52,13 +61,6 @@ function App() {
       }
     }
   }, []); // Only run once on mount
-
-  const importAllData = (data: any) => {
-    if (data.students) setStudents(data.students);
-    if (data.assignments) setAssignments(data.assignments);
-    if (data.grades) setGrades(data.grades);
-    if (data.letterGrades) setLetterGrades(data.letterGrades);
-  };
 
   // Validate hash on initial load and clear if invalid
   useEffect(() => {
@@ -219,10 +221,11 @@ function App() {
           assignments={assignments}
           grades={grades}
           letterGrades={letterGrades}
+          version={version}
           onAddStudent={handleAddStudent}
           onDeleteStudent={handleDeleteStudent}
           onUpdateLetterGrades={setLetterGrades}
-          onImportData={importAllData}
+          onImportData={importData}
           onClose={() => setShowSettings(false)}
         />
       )}

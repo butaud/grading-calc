@@ -2,25 +2,28 @@ import { useState } from 'react';
 import { StudentManager } from './StudentManager';
 import { LetterGradeSettings } from './LetterGradeSettings';
 import type { Student, LetterGrade, Assignment, Grade } from '../types';
+import { CURRENT_VERSION } from '../migrations';
 
 interface SettingsProps {
   students: Student[];
   assignments: Assignment[];
   grades: Grade[];
   letterGrades: LetterGrade[];
+  version: number;
   onAddStudent: (name: string) => void;
   onDeleteStudent: (id: string) => void;
   onUpdateLetterGrades: (letterGrades: LetterGrade[]) => void;
-  onImportData: (data: { students: Student[]; assignments: Assignment[]; grades: Grade[]; letterGrades: LetterGrade[] }) => void;
+  onImportData: (data: any) => void;
   onClose: () => void;
 }
 
-export function Settings({ students, assignments, grades, letterGrades, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onImportData, onClose }: SettingsProps) {
+export function Settings({ students, assignments, grades, letterGrades, version, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onImportData, onClose }: SettingsProps) {
   const [activeTab, setActiveTab] = useState<'students' | 'letterGrades' | 'export'>('students');
   const [exportUrl, setExportUrl] = useState<string>('');
 
   const handleGenerateExportLink = () => {
     const exportData = {
+      version: CURRENT_VERSION,
       students,
       assignments,
       grades,
@@ -35,6 +38,7 @@ export function Settings({ students, assignments, grades, letterGrades, onAddStu
 
   const handleExportJSON = () => {
     const exportData = {
+      version: CURRENT_VERSION,
       students,
       assignments,
       grades,
@@ -63,9 +67,9 @@ export function Settings({ students, assignments, grades, letterGrades, onAddStu
         const json = e.target?.result as string;
         const data = JSON.parse(json);
 
-        // Validate the data structure
-        if (!data.students || !data.assignments || !data.grades || !data.letterGrades) {
-          alert('Invalid JSON file format. Please ensure the file contains students, assignments, grades, and letterGrades.');
+        // Basic validation - migrations will handle version updates
+        if (!data || typeof data !== 'object') {
+          alert('Invalid JSON file format.');
           return;
         }
 
@@ -134,6 +138,9 @@ export function Settings({ students, assignments, grades, letterGrades, onAddStu
           {activeTab === 'export' && (
             <div className="section">
               <h2>Export Data</h2>
+              <p className="hint" style={{ marginBottom: '1.5rem' }}>
+                Current data version: {version}
+              </p>
 
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '1.1em', marginBottom: '0.5rem' }}>Export as JSON File</h3>
