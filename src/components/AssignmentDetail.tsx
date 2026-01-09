@@ -362,39 +362,30 @@ export function AssignmentDetail({
                   );
                 })}
               </tbody>
+              <tfoot>
+                <tr className="stats-row">
+                  <td className="stats-label">Class Average</td>
+                  {assignment.items.map((item) => {
+                    const itemAverage = calculateAverage(item.id);
+                    const itemPercentage = calculatePercentage(item.id);
+                    return (
+                      <td key={item.id} className="stats-cell">
+                        {itemAverage.toFixed(2)}<br />
+                        <span className="stats-percentage">({itemPercentage.toFixed(1)}%)</span>
+                      </td>
+                    );
+                  })}
+                  <td className="stats-cell stats-overall">
+                    {calculatePercentage().toFixed(1)}%
+                    {letterGrades.length > 0 && (() => {
+                      const overallPercentage = calculatePercentage();
+                      const letterGrade = getLetterGrade(overallPercentage, letterGrades);
+                      return letterGrade ? ` (${letterGrade})` : '';
+                    })()}
+                  </td>
+                </tr>
+              </tfoot>
             </table>
-          </div>
-        </section>
-
-        <section className="stats-section">
-          <h3>Class Statistics</h3>
-          <div className="stats-grid">
-            <div className="stat-card overall">
-              <div className="stat-label">Overall Average</div>
-              <div className="stat-value">
-                {calculatePercentage().toFixed(1)}%
-                {letterGrades.length > 0 && (() => {
-                  const overallPercentage = calculatePercentage();
-                  const letterGrade = getLetterGrade(overallPercentage, letterGrades);
-                  return letterGrade ? ` (${letterGrade})` : '';
-                })()}
-              </div>
-            </div>
-
-            {assignment.items.map((item) => {
-              const itemAverage = calculateAverage(item.id);
-              const itemPercentage = calculatePercentage(item.id);
-
-              return (
-                <div key={item.id} className="stat-card">
-                  <div className="stat-label">{item.name}</div>
-                  <div className="stat-value">
-                    {itemAverage.toFixed(2)} / {item.maxPoints}
-                  </div>
-                  <div className="stat-percentage">{itemPercentage.toFixed(1)}%</div>
-                </div>
-              );
-            })}
           </div>
         </section>
       </div>}

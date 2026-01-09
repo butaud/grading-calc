@@ -292,6 +292,37 @@ tr:hover {
   color: #646cff;
 }
 
+/* Stats Row in Table Footer */
+tfoot .stats-row {
+  background-color: rgba(100, 108, 255, 0.1);
+  border-top: 2px solid #646cff;
+}
+
+tfoot .stats-row:hover {
+  background-color: rgba(100, 108, 255, 0.15);
+}
+
+.stats-label {
+  font-weight: 600;
+  color: #646cff;
+}
+
+.stats-cell {
+  font-weight: 600;
+  color: #646cff;
+  text-align: center;
+}
+
+.stats-percentage {
+  font-size: 0.85em;
+  color: #888;
+  font-weight: 400;
+}
+
+.stats-overall {
+  font-size: 1.1em;
+}
+
 /* Modal Overlay */
 .modal-overlay,
 .settings-overlay {
@@ -745,6 +776,24 @@ tr:hover {
 
   .total-cell {
     color: #535bf2;
+  }
+
+  tfoot .stats-row {
+    background-color: rgba(83, 91, 242, 0.1);
+    border-top-color: #535bf2;
+  }
+
+  tfoot .stats-row:hover {
+    background-color: rgba(83, 91, 242, 0.15);
+  }
+
+  .stats-label,
+  .stats-cell {
+    color: #535bf2;
+  }
+
+  .stats-percentage {
+    color: #666;
   }
 
   .modal,
