@@ -363,7 +363,7 @@ export function AssignmentDetail({
           </button>
           <h2>{assignment.name}</h2>
         </div>
-        <p className="empty">Please add students first (use the settings menu)</p>
+        <p className="empty">Please add students first (use the Students tab)</p>
       </div>
     );
   }

@@ -29,7 +29,7 @@ export function GradeEntry({ students, assignments, grades, onUpdateGrade }: Gra
     return (
       <div className="section">
         <h2>Enter Grades</h2>
-        <p className="empty">Please add students first</p>
+        <p className="empty">Please add students first (use the Students tab)</p>
       </div>
     );
   }

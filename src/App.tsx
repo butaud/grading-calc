@@ -5,6 +5,7 @@ import { generateId } from './utils';
 import { runMigrations } from './migrations';
 import { AssignmentList } from './components/AssignmentList';
 import { AssignmentDetail } from './components/AssignmentDetail';
+import { StudentList } from './components/StudentList';
 import { Settings } from './components/Settings';
 import { AddAssignmentModal } from './components/AddAssignmentModal';
 import { ClassSelector } from './components/ClassSelector';
@@ -30,6 +31,7 @@ function App() {
     const hash = window.location.hash.slice(1);
     return hash || null;
   });
+  const [currentView, setCurrentView] = useState<'students' | 'assignments'>('assignments');
   const [showSettings, setShowSettings] = useState(false);
   const [showAddAssignment, setShowAddAssignment] = useState(false);
 
@@ -139,6 +141,12 @@ function App() {
     updateCurrentClass({
       students: students.filter((s) => s.id !== id),
       grades: grades.filter((g) => g.studentId !== id)
+    });
+  };
+
+  const handleRenameStudent = (id: string, newName: string) => {
+    updateCurrentClass({
+      students: students.map(s => s.id === id ? { ...s, name: newName } : s)
     });
   };
 
@@ -308,25 +316,51 @@ function App() {
             onDelete={() => handleDeleteAssignment(selectedAssignment.id)}
           />
         ) : (
-          <AssignmentList
-            assignments={assignments}
-            students={students}
-            grades={grades}
-            letterGrades={letterGrades}
-            onSelectAssignment={setSelectedAssignmentId}
-            onAddAssignment={() => setShowAddAssignment(true)}
-          />
+          <>
+            <nav className="main-tabs">
+              <button
+                className={`main-tab ${currentView === 'assignments' ? 'active' : ''}`}
+                onClick={() => setCurrentView('assignments')}
+              >
+                Assignments
+              </button>
+              <button
+                className={`main-tab ${currentView === 'students' ? 'active' : ''}`}
+                onClick={() => setCurrentView('students')}
+              >
+                Students
+              </button>
+            </nav>
+
+            {currentView === 'assignments' ? (
+              <AssignmentList
+                assignments={assignments}
+                students={students}
+                grades={grades}
+                letterGrades={letterGrades}
+                onSelectAssignment={setSelectedAssignmentId}
+                onAddAssignment={() => setShowAddAssignment(true)}
+              />
+            ) : (
+              <StudentList
+                students={students}
+                assignments={assignments}
+                grades={grades}
+                letterGrades={letterGrades}
+                onAddStudent={handleAddStudent}
+                onDeleteStudent={handleDeleteStudent}
+                onRenameStudent={handleRenameStudent}
+              />
+            )}
+          </>
         )}
       </main>
 
       {showSettings && (
         <Settings
-          students={students}
           classes={classes}
           letterGrades={letterGrades}
           version={version}
-          onAddStudent={handleAddStudent}
-          onDeleteStudent={handleDeleteStudent}
           onUpdateLetterGrades={setLetterGrades}
           onImportData={handleImportData}
           onClose={() => setShowSettings(false)}

@@ -1,23 +1,19 @@
 import { useState } from 'react';
-import { StudentManager } from './StudentManager';
 import { LetterGradeSettings } from './LetterGradeSettings';
-import type { Student, LetterGrade } from '../types';
+import type { LetterGrade } from '../types';
 import { CURRENT_VERSION } from '../migrations';
 
 interface SettingsProps {
-  students: Student[];
   classes: any[]; // All classes for export
   letterGrades: LetterGrade[];
   version: number;
-  onAddStudent: (name: string) => void;
-  onDeleteStudent: (id: string) => void;
   onUpdateLetterGrades: (letterGrades: LetterGrade[]) => void;
   onImportData: (data: any) => void;
   onClose: () => void;
 }
 
-export function Settings({ students, classes, letterGrades, version, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onImportData, onClose }: SettingsProps) {
-  const [activeTab, setActiveTab] = useState<'students' | 'letterGrades' | 'export'>('students');
+export function Settings({ classes, letterGrades, version, onUpdateLetterGrades, onImportData, onClose }: SettingsProps) {
+  const [activeTab, setActiveTab] = useState<'letterGrades' | 'export'>('letterGrades');
   const [exportUrl, setExportUrl] = useState<string>('');
 
   const handleGenerateExportLink = () => {
@@ -95,12 +91,6 @@ export function Settings({ students, classes, letterGrades, version, onAddStuden
 
         <nav className="settings-tabs">
           <button
-            className={activeTab === 'students' ? 'settings-tab active' : 'settings-tab'}
-            onClick={() => setActiveTab('students')}
-          >
-            Students
-          </button>
-          <button
             className={activeTab === 'letterGrades' ? 'settings-tab active' : 'settings-tab'}
             onClick={() => setActiveTab('letterGrades')}
           >
@@ -115,14 +105,6 @@ export function Settings({ students, classes, letterGrades, version, onAddStuden
         </nav>
 
         <div className="settings-content">
-          {activeTab === 'students' && (
-            <StudentManager
-              students={students}
-              onAddStudent={onAddStudent}
-              onDeleteStudent={onDeleteStudent}
-            />
-          )}
-
           {activeTab === 'letterGrades' && (
             <LetterGradeSettings
               letterGrades={letterGrades}

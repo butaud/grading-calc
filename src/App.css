@@ -48,6 +48,36 @@
   margin: 0 auto;
 }
 
+.main-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #333;
+  padding-bottom: 0;
+}
+
+.main-tab {
+  background: transparent;
+  color: #888;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: -2px;
+}
+
+.main-tab:hover {
+  color: #ccc;
+}
+
+.main-tab.active {
+  color: #646cff;
+  border-bottom-color: #646cff;
+}
+
 /* Assignment List View */
 .assignment-list-view {
   width: 100%;
@@ -752,6 +782,23 @@ tfoot .stats-row:hover {
     background-color: rgba(255, 255, 255, 0.5);
   }
 
+  .main-tabs {
+    border-bottom-color: #e0e0e0;
+  }
+
+  .main-tab {
+    color: #666;
+  }
+
+  .main-tab:hover {
+    color: #333;
+  }
+
+  .main-tab.active {
+    color: #535bf2;
+    border-bottom-color: #535bf2;
+  }
+
   .view-header h2 {
     color: #535bf2;
   }
@@ -1047,6 +1094,15 @@ tfoot .stats-row:hover {
 
   .main {
     padding: 1rem;
+  }
+
+  .main-tabs {
+    margin-bottom: 1.5rem;
+  }
+
+  .main-tab {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
 
   .view-header {
