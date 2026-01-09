@@ -26,7 +26,19 @@ export function AssignmentDetail({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment.name);
   const [editedItems, setEditedItems] = useState<GradeItem[]>(assignment.items);
-  const [sortBy, setSortBy] = useState<'name' | 'score-asc' | 'score-desc'>('name');
+  const [sortColumn, setSortColumn] = useState<'name' | 'score'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const handleHeaderClick = (column: 'name' | 'score') => {
+    if (sortColumn === column) {
+      // Toggle direction if clicking the same column
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new column and default to ascending
+      setSortColumn(column);
+      setSortDirection(column === 'name' ? 'asc' : 'desc');
+    }
+  };
 
   const handleStartEdit = () => {
     setEditedName(assignment.name);
@@ -287,12 +299,12 @@ export function AssignmentDetail({
       return { student, percentage };
     });
 
-    if (sortBy === 'name') {
-      return studentsWithScores.sort((a, b) => a.student.name.localeCompare(b.student.name)).map(s => s.student);
-    } else if (sortBy === 'score-asc') {
-      return studentsWithScores.sort((a, b) => a.percentage - b.percentage).map(s => s.student);
+    if (sortColumn === 'name') {
+      const sorted = studentsWithScores.sort((a, b) => a.student.name.localeCompare(b.student.name));
+      return sortDirection === 'asc' ? sorted.map(s => s.student) : sorted.reverse().map(s => s.student);
     } else {
-      return studentsWithScores.sort((a, b) => b.percentage - a.percentage).map(s => s.student);
+      const sorted = studentsWithScores.sort((a, b) => a.percentage - b.percentage);
+      return sortDirection === 'asc' ? sorted.map(s => s.student) : sorted.reverse().map(s => s.student);
     }
   };
 
@@ -416,41 +428,30 @@ export function AssignmentDetail({
 
       {!isEditing && <div className="detail-sections">
         <section className="grades-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ margin: 0 }}>Student Grades</h3>
-            <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.9em' }}>
-              <span style={{ color: '#aaa', marginRight: '0.5rem' }}>Sort by:</span>
-              <button
-                onClick={() => setSortBy('name')}
-                className={sortBy === 'name' ? 'sort-btn active' : 'sort-btn'}
-              >
-                Name
-              </button>
-              <button
-                onClick={() => setSortBy('score-desc')}
-                className={sortBy === 'score-desc' ? 'sort-btn active' : 'sort-btn'}
-              >
-                Score ↓
-              </button>
-              <button
-                onClick={() => setSortBy('score-asc')}
-                className={sortBy === 'score-asc' ? 'sort-btn active' : 'sort-btn'}
-              >
-                Score ↑
-              </button>
-            </div>
-          </div>
+          <h3>Student Grades</h3>
           <div className="grades-table">
             <table>
               <thead>
                 <tr>
-                  <th>Student</th>
+                  <th
+                    onClick={() => handleHeaderClick('name')}
+                    className="sortable-header"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    Student {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
                   {assignment.items.map((item) => (
                     <th key={item.id}>
                       {item.name} ({item.maxPoints})
                     </th>
                   ))}
-                  <th>Total</th>
+                  <th
+                    onClick={() => handleHeaderClick('score')}
+                    className="sortable-header"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    Total {sortColumn === 'score' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
