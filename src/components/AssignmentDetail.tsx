@@ -436,7 +436,7 @@ export function AssignmentDetail({
                           <>
                             {total.toFixed(2)} / {studentMax} ({percentage.toFixed(1)}%{letterGrade && (
                               <span style={{ color: getLetterGradeColor(letterGrade, letterGrades) || undefined }}>
-                                , {letterGrade}
+                                {' '}{letterGrade}
                               </span>
                             )})
                           </>
