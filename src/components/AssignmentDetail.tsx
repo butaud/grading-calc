@@ -129,6 +129,50 @@ export function AssignmentDetail({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent, studentIndex: number, itemIndex: number) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+      return;
+    }
+
+    e.preventDefault();
+
+    let nextStudentIndex = studentIndex;
+    let nextItemIndex = itemIndex;
+
+    switch (e.key) {
+      case 'ArrowLeft':
+        nextItemIndex = itemIndex - 1;
+        break;
+      case 'ArrowRight':
+        nextItemIndex = itemIndex + 1;
+        break;
+      case 'ArrowUp':
+        nextStudentIndex = studentIndex - 1;
+        break;
+      case 'ArrowDown':
+        nextStudentIndex = studentIndex + 1;
+        break;
+    }
+
+    // Bounds check
+    if (nextItemIndex < 0 || nextItemIndex >= assignment.items.length) {
+      return;
+    }
+    if (nextStudentIndex < 0 || nextStudentIndex >= sortedStudents.length) {
+      return;
+    }
+
+    // Focus the next cell
+    const nextInput = document.querySelector(
+      `input[data-student-index="${nextStudentIndex}"][data-item-index="${nextItemIndex}"]`
+    ) as HTMLInputElement;
+
+    if (nextInput) {
+      nextInput.focus();
+      nextInput.select();
+    }
+  };
+
   const calculateAverage = (itemId?: string): number => {
     if (students.length === 0) return 0;
 
@@ -455,7 +499,7 @@ export function AssignmentDetail({
                 </tr>
               </thead>
               <tbody>
-                {sortedStudents.map((student) => {
+                {sortedStudents.map((student, studentIndex) => {
                   let total = 0;
                   let studentMax = 0;
 
@@ -473,12 +517,15 @@ export function AssignmentDetail({
                   return (
                     <tr key={student.id}>
                       <td>{student.name}</td>
-                      {assignment.items.map((item) => (
+                      {assignment.items.map((item, itemIndex) => (
                         <td key={item.id}>
                           <input
                             type="number"
                             value={getGrade(student.id, item.id) ?? ''}
                             onChange={(e) => handleGradeChange(student.id, item.id, e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, studentIndex, itemIndex)}
+                            data-student-index={studentIndex}
+                            data-item-index={itemIndex}
                             className="grade-input"
                             min="0"
                             max={item.maxPoints}
