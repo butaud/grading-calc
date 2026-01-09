@@ -521,7 +521,7 @@ export function AssignmentDetail({
                         const grade = getGrade(student.id, item.id);
                         const itemPercentage = grade != null && item.maxPoints > 0 ? (grade / item.maxPoints) * 100 : null;
                         const itemLetterGrade = itemPercentage != null ? getLetterGrade(itemPercentage, letterGrades) : null;
-                        const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.15) : null;
+                        const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.08) : null;
 
                         return (
                           <td
@@ -545,12 +545,7 @@ export function AssignmentDetail({
                           </td>
                         );
                       })}
-                      <td
-                        className="total-cell sticky-total-col"
-                        style={{
-                          backgroundColor: letterGrade ? getLetterGradeColorWithAlpha(letterGrade, letterGrades, 0.15) || undefined : undefined
-                        }}
-                      >
+                      <td className="total-cell sticky-total-col">
                         {studentMax > 0 ? (
                           <>
                             {total.toFixed(2)} / {studentMax} ({percentage.toFixed(1)}%{letterGrade && (
@@ -574,7 +569,7 @@ export function AssignmentDetail({
                     const itemAverage = calculateAverage(item.id);
                     const itemPercentage = calculatePercentage(item.id);
                     const itemLetterGrade = getLetterGrade(itemPercentage, letterGrades);
-                    const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.15) : null;
+                    const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.08) : null;
                     return (
                       <td
                         key={item.id}
@@ -588,16 +583,7 @@ export function AssignmentDetail({
                       </td>
                     );
                   })}
-                  <td
-                    className="stats-cell stats-overall sticky-total-col"
-                    style={{
-                      backgroundColor: (() => {
-                        const overallPercentage = calculatePercentage();
-                        const letterGrade = getLetterGrade(overallPercentage, letterGrades);
-                        return letterGrade ? getLetterGradeColorWithAlpha(letterGrade, letterGrades, 0.15) || undefined : undefined;
-                      })()
-                    }}
-                  >
+                  <td className="stats-cell stats-overall sticky-total-col">
                     {calculatePercentage().toFixed(1)}%
                     {letterGrades.length > 0 && (() => {
                       const overallPercentage = calculatePercentage();
@@ -616,7 +602,7 @@ export function AssignmentDetail({
                     const itemMedian = calculateMedian(item.id);
                     const itemMedianPercentage = calculateMedianPercentage(item.id);
                     const itemLetterGrade = getLetterGrade(itemMedianPercentage, letterGrades);
-                    const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.15) : null;
+                    const bgColor = itemLetterGrade ? getLetterGradeColorWithAlpha(itemLetterGrade, letterGrades, 0.08) : null;
                     return (
                       <td
                         key={item.id}
@@ -630,16 +616,7 @@ export function AssignmentDetail({
                       </td>
                     );
                   })}
-                  <td
-                    className="stats-cell stats-overall sticky-total-col"
-                    style={{
-                      backgroundColor: (() => {
-                        const overallMedianPercentage = calculateMedianPercentage();
-                        const letterGrade = getLetterGrade(overallMedianPercentage, letterGrades);
-                        return letterGrade ? getLetterGradeColorWithAlpha(letterGrade, letterGrades, 0.15) || undefined : undefined;
-                      })()
-                    }}
-                  >
+                  <td className="stats-cell stats-overall sticky-total-col">
                     {calculateMedianPercentage().toFixed(1)}%
                     {letterGrades.length > 0 && (() => {
                       const overallMedianPercentage = calculateMedianPercentage();
