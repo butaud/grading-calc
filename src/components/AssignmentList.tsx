@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Assignment, Student, Grade, LetterGrade } from '../types';
 import { getLetterGrade, getLetterGradeColor } from '../utils';
 
@@ -11,6 +12,7 @@ interface AssignmentListProps {
 }
 
 export function AssignmentList({ assignments, students, grades, letterGrades, onSelectAssignment, onAddAssignment }: AssignmentListProps) {
+  const [filterText, setFilterText] = useState('');
   const calculateStats = (assignment: Assignment) => {
     if (students.length === 0) {
       return { mean: 0, median: 0, completion: 0, meanLetterGrade: null, medianLetterGrade: null };
@@ -62,6 +64,11 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
 
     return { mean, median, completion, meanLetterGrade, medianLetterGrade };
   };
+
+  const filteredAssignments = assignments.filter(assignment =>
+    assignment.name.toLowerCase().includes(filterText.toLowerCase())
+  );
+
   return (
     <div className="assignment-list-view">
       <div className="view-header">
@@ -71,14 +78,32 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
         </button>
       </div>
 
+      {assignments.length > 0 && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <input
+            type="text"
+            placeholder="Filter assignments..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className="input filter-input"
+            style={{ maxWidth: '400px' }}
+          />
+        </div>
+      )}
+
       {assignments.length === 0 ? (
         <div className="empty-state">
           <p>No assignments yet</p>
           <p className="empty-hint">Click "Add Assignment" to create your first assignment</p>
         </div>
+      ) : filteredAssignments.length === 0 ? (
+        <div className="empty-state">
+          <p>No assignments match "{filterText}"</p>
+          <p className="empty-hint">Try a different search term</p>
+        </div>
       ) : (
         <div className="assignment-cards">
-          {assignments.map((assignment) => {
+          {filteredAssignments.map((assignment) => {
             const totalPoints = assignment.items.reduce((sum, item) => sum + item.maxPoints, 0);
             const stats = calculateStats(assignment);
             return (
