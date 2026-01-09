@@ -11,10 +11,11 @@ interface SettingsProps {
   onAddStudent: (name: string) => void;
   onDeleteStudent: (id: string) => void;
   onUpdateLetterGrades: (letterGrades: LetterGrade[]) => void;
+  onImportData: (data: { students: Student[]; assignments: Assignment[]; grades: Grade[]; letterGrades: LetterGrade[] }) => void;
   onClose: () => void;
 }
 
-export function Settings({ students, assignments, grades, letterGrades, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onClose }: SettingsProps) {
+export function Settings({ students, assignments, grades, letterGrades, onAddStudent, onDeleteStudent, onUpdateLetterGrades, onImportData, onClose }: SettingsProps) {
   const [activeTab, setActiveTab] = useState<'students' | 'letterGrades' | 'export'>('students');
   const [exportUrl, setExportUrl] = useState<string>('');
 
@@ -30,6 +31,57 @@ export function Settings({ students, assignments, grades, letterGrades, onAddStu
     const encoded = btoa(json);
     const url = `${window.location.origin}${window.location.pathname}?import=${encoded}`;
     setExportUrl(url);
+  };
+
+  const handleExportJSON = () => {
+    const exportData = {
+      students,
+      assignments,
+      grades,
+      letterGrades
+    };
+
+    const json = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grading-calc-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = e.target?.result as string;
+        const data = JSON.parse(json);
+
+        // Validate the data structure
+        if (!data.students || !data.assignments || !data.grades || !data.letterGrades) {
+          alert('Invalid JSON file format. Please ensure the file contains students, assignments, grades, and letterGrades.');
+          return;
+        }
+
+        if (confirm('This will replace all current data. Are you sure you want to continue?')) {
+          onImportData(data);
+          alert('Data imported successfully!');
+        }
+      } catch (error) {
+        alert('Error parsing JSON file. Please ensure it is a valid JSON file.');
+        console.error(error);
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset the input so the same file can be selected again
+    event.target.value = '';
   };
 
   return (
@@ -82,38 +134,67 @@ export function Settings({ students, assignments, grades, letterGrades, onAddStu
           {activeTab === 'export' && (
             <div className="section">
               <h2>Export Data</h2>
-              <p className="hint">
-                Export all your data (students, assignments, grades, and letter grades) as a shareable link.
-                You can use this link to import your data into another browser or share it with others.
-              </p>
-              <button onClick={handleGenerateExportLink} className="primary-btn">
-                Generate Export Link
-              </button>
-              {exportUrl && (
-                <div style={{ marginTop: '1.5rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: '#ccc', fontWeight: 500 }}>
-                    Export Link (tap and hold to select all):
-                  </label>
-                  <textarea
-                    readOnly
-                    value={exportUrl}
-                    onClick={(e) => e.currentTarget.select()}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1px solid #646cff',
-                      borderRadius: '4px',
-                      backgroundColor: '#1a1a1a',
-                      color: '#646cff',
-                      fontFamily: 'monospace',
-                      fontSize: '0.9rem',
-                      minHeight: '100px',
-                      resize: 'vertical',
-                      wordBreak: 'break-all'
-                    }}
+
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.1em', marginBottom: '0.5rem' }}>Export as JSON File</h3>
+                <p className="hint">
+                  Download all your data as a JSON file that you can save and import later.
+                </p>
+                <button onClick={handleExportJSON} className="primary-btn">
+                  Download JSON File
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.1em', marginBottom: '0.5rem' }}>Import from JSON File</h3>
+                <p className="hint">
+                  Upload a previously exported JSON file to restore your data. This will replace all current data.
+                </p>
+                <label className="primary-btn" style={{ cursor: 'pointer', display: 'inline-block' }}>
+                  Choose JSON File
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportJSON}
+                    style={{ display: 'none' }}
                   />
-                </div>
-              )}
+                </label>
+              </div>
+
+              <div>
+                <h3 style={{ fontSize: '1.1em', marginBottom: '0.5rem' }}>Export as Shareable Link</h3>
+                <p className="hint">
+                  Generate a URL that contains all your data. You can use this link to import your data into another browser or share it with others.
+                </p>
+                <button onClick={handleGenerateExportLink} className="secondary-btn">
+                  Generate Export Link
+                </button>
+                {exportUrl && (
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: '#ccc', fontWeight: 500 }}>
+                      Export Link (tap and hold to select all):
+                    </label>
+                    <textarea
+                      readOnly
+                      value={exportUrl}
+                      onClick={(e) => e.currentTarget.select()}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '1px solid #646cff',
+                        borderRadius: '4px',
+                        backgroundColor: '#1a1a1a',
+                        color: '#646cff',
+                        fontFamily: 'monospace',
+                        fontSize: '0.9rem',
+                        minHeight: '100px',
+                        resize: 'vertical',
+                        wordBreak: 'break-all'
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

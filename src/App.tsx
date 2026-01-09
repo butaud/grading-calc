@@ -222,6 +222,7 @@ function App() {
           onAddStudent={handleAddStudent}
           onDeleteStudent={handleDeleteStudent}
           onUpdateLetterGrades={setLetterGrades}
+          onImportData={importAllData}
           onClose={() => setShowSettings(false)}
         />
       )}
