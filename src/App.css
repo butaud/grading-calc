@@ -684,6 +684,44 @@ tfoot .stats-row:hover {
   flex-wrap: wrap;
 }
 
+/* Sticky table columns (desktop only) */
+@media (min-width: 769px) {
+  /* Sticky header row */
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  /* Sticky name column (first column) */
+  .sticky-name-col {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background-color: #1a1a1a;
+  }
+
+  /* Sticky total column (last column) */
+  .sticky-total-col {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background-color: #1a1a1a;
+  }
+
+  /* Higher z-index for header sticky columns */
+  thead .sticky-name-col,
+  thead .sticky-total-col {
+    z-index: 3;
+  }
+
+  /* Ensure footer rows also have proper background */
+  tfoot .sticky-name-col,
+  tfoot .sticky-total-col {
+    background-color: rgba(100, 108, 255, 0.1);
+  }
+}
+
 @media (prefers-color-scheme: light) {
   .header {
     background-color: #535bf2;
@@ -940,6 +978,27 @@ tfoot .stats-row:hover {
 
   .threshold-label {
     color: #666;
+  }
+
+  /* Sticky table columns (desktop only) - light mode colors */
+  @media (min-width: 769px) {
+    .sticky-name-col {
+      background-color: white;
+    }
+
+    .sticky-total-col {
+      background-color: white;
+    }
+
+    thead .sticky-name-col,
+    thead .sticky-total-col {
+      background-color: #f5f5f5;
+    }
+
+    tfoot .sticky-name-col,
+    tfoot .sticky-total-col {
+      background-color: rgba(83, 91, 242, 0.1);
+    }
   }
 }
 

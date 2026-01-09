@@ -479,7 +479,7 @@ export function AssignmentDetail({
                 <tr>
                   <th
                     onClick={() => handleHeaderClick('name')}
-                    className="sortable-header"
+                    className="sortable-header sticky-name-col"
                     style={{ cursor: 'pointer' }}
                   >
                     Student {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -491,7 +491,7 @@ export function AssignmentDetail({
                   ))}
                   <th
                     onClick={() => handleHeaderClick('score')}
-                    className="sortable-header"
+                    className="sortable-header sticky-total-col"
                     style={{ cursor: 'pointer' }}
                   >
                     Total {sortColumn === 'score' && (sortDirection === 'asc' ? '↑' : '↓')}
@@ -516,7 +516,7 @@ export function AssignmentDetail({
 
                   return (
                     <tr key={student.id}>
-                      <td>{student.name}</td>
+                      <td className="sticky-name-col">{student.name}</td>
                       {assignment.items.map((item, itemIndex) => (
                         <td key={item.id}>
                           <input
@@ -533,7 +533,7 @@ export function AssignmentDetail({
                           />
                         </td>
                       ))}
-                      <td className="total-cell">
+                      <td className="total-cell sticky-total-col">
                         {studentMax > 0 ? (
                           <>
                             {total.toFixed(2)} / {studentMax} ({percentage.toFixed(1)}%{letterGrade && (
@@ -552,7 +552,7 @@ export function AssignmentDetail({
               </tbody>
               <tfoot>
                 <tr className="stats-row">
-                  <td className="stats-label">Class Average</td>
+                  <td className="stats-label sticky-name-col">Class Average</td>
                   {assignment.items.map((item) => {
                     const itemAverage = calculateAverage(item.id);
                     const itemPercentage = calculatePercentage(item.id);
@@ -563,7 +563,7 @@ export function AssignmentDetail({
                       </td>
                     );
                   })}
-                  <td className="stats-cell stats-overall">
+                  <td className="stats-cell stats-overall sticky-total-col">
                     {calculatePercentage().toFixed(1)}%
                     {letterGrades.length > 0 && (() => {
                       const overallPercentage = calculatePercentage();
@@ -577,7 +577,7 @@ export function AssignmentDetail({
                   </td>
                 </tr>
                 <tr className="stats-row">
-                  <td className="stats-label">Class Median</td>
+                  <td className="stats-label sticky-name-col">Class Median</td>
                   {assignment.items.map((item) => {
                     const itemMedian = calculateMedian(item.id);
                     const itemMedianPercentage = calculateMedianPercentage(item.id);
@@ -588,7 +588,7 @@ export function AssignmentDetail({
                       </td>
                     );
                   })}
-                  <td className="stats-cell stats-overall">
+                  <td className="stats-cell stats-overall sticky-total-col">
                     {calculateMedianPercentage().toFixed(1)}%
                     {letterGrades.length > 0 && (() => {
                       const overallMedianPercentage = calculateMedianPercentage();
