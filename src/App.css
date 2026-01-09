@@ -720,10 +720,11 @@ tfoot .stats-row:hover {
     z-index: 3;
   }
 
-  /* Ensure footer rows also have proper background */
+  /* Ensure footer rows also have proper opaque background */
   tfoot .sticky-name-col,
   tfoot .sticky-total-col {
-    background-color: rgba(100, 108, 255, 0.1);
+    background-color: #1a1a1a;
+    background-image: linear-gradient(rgba(100, 108, 255, 0.1), rgba(100, 108, 255, 0.1));
   }
 }
 
@@ -1002,7 +1003,8 @@ tfoot .stats-row:hover {
 
     tfoot .sticky-name-col,
     tfoot .sticky-total-col {
-      background-color: rgba(83, 91, 242, 0.1);
+      background-color: white;
+      background-image: linear-gradient(rgba(83, 91, 242, 0.1), rgba(83, 91, 242, 0.1));
     }
   }
 }
