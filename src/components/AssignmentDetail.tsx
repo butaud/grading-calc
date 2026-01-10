@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Student, Assignment, Grade, GradeItem, LetterGrade } from '../types';
 import { generateId, getLetterGrade, getLetterGradeColor, getLetterGradeColorWithAlpha } from '../utils';
+import { generateAssignmentPDF, type StudentPDFData } from '../utils/pdfExport';
 
 interface AssignmentDetailProps {
   assignment: Assignment;
@@ -78,6 +79,65 @@ export function AssignmentDetail({
 
     onUpdateAssignment(updatedAssignment, deletedItemIds);
     setIsEditing(false);
+  };
+
+  const handleExportPDF = () => {
+    if (students.length === 0) {
+      alert('No students to export. Please add students first.');
+      return;
+    }
+
+    try {
+      // Prepare student data for PDF export
+      const studentDataForExport: StudentPDFData[] = students.map(student => {
+        const grade = grades.find(g =>
+          g.studentId === student.id &&
+          g.assignmentId === assignment.id
+        );
+
+        let total = 0;
+        let maxPossible = 0;
+
+        // Filter items to only those with entered values
+        const itemsWithGrades = assignment.items
+          .map(item => {
+            const points = grade?.itemGrades[item.id];
+            if (points != null) {
+              total += points;
+              maxPossible += item.maxPoints;
+              return {
+                name: item.name,
+                score: points,
+                maxPoints: item.maxPoints
+              };
+            }
+            return null;
+          })
+          .filter((item): item is NonNullable<typeof item> => item !== null);
+
+        const percentage = maxPossible > 0 ? (total / maxPossible) * 100 : 0;
+        const letterGrade = getLetterGrade(percentage, letterGrades);
+
+        return {
+          studentName: student.name,
+          items: itemsWithGrades,
+          total,
+          maxPossible,
+          percentage,
+          letterGrade
+        };
+      });
+
+      generateAssignmentPDF(
+        assignment.name,
+        assignment.date,
+        studentDataForExport,
+        letterGrades
+      );
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
   const handleAddItem = () => {
@@ -381,6 +441,9 @@ export function AssignmentDetail({
         <div className="header-actions">
           {!isEditing && (
             <>
+              <button onClick={handleExportPDF} className="secondary-btn">
+                Export PDF
+              </button>
               <button onClick={handleStartEdit} className="secondary-btn">
                 Edit Assignment
               </button>
