@@ -115,7 +115,7 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
                   className="sort-arrow-btn"
                   title="Filter assignments"
                 >
-                  🔍
+                  ⌕
                 </button>
               )}
             </>
