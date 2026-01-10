@@ -14,6 +14,7 @@ interface AssignmentListProps {
 export function AssignmentList({ assignments, students, grades, letterGrades, onSelectAssignment, onAddAssignment }: AssignmentListProps) {
   const [filterText, setFilterText] = useState('');
   const [sortAscending, setSortAscending] = useState(false); // false = descending (newest first)
+  const [filterExpanded, setFilterExpanded] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -86,32 +87,44 @@ export function AssignmentList({ assignments, students, grades, letterGrades, on
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <h2>Assignments</h2>
           {assignments.length > 0 && (
-            <button
-              onClick={() => setSortAscending(!sortAscending)}
-              className="sort-arrow-btn"
-              title={sortAscending ? 'Oldest first (click for newest first)' : 'Newest first (click for oldest first)'}
-            >
-              {sortAscending ? '↑' : '↓'}
-            </button>
+            <>
+              <button
+                onClick={() => setSortAscending(!sortAscending)}
+                className="sort-arrow-btn"
+                title={sortAscending ? 'Oldest first (click for newest first)' : 'Newest first (click for oldest first)'}
+              >
+                {sortAscending ? '↑' : '↓'}
+              </button>
+              {filterExpanded || filterText ? (
+                <input
+                  type="text"
+                  placeholder="Filter..."
+                  value={filterText}
+                  onChange={(e) => setFilterText(e.target.value)}
+                  onBlur={() => {
+                    if (!filterText) {
+                      setFilterExpanded(false);
+                    }
+                  }}
+                  className="filter-input-inline"
+                  autoFocus
+                />
+              ) : (
+                <button
+                  onClick={() => setFilterExpanded(true)}
+                  className="sort-arrow-btn"
+                  title="Filter assignments"
+                >
+                  🔍
+                </button>
+              )}
+            </>
           )}
         </div>
         <button onClick={onAddAssignment} className="primary-btn">
           Add Assignment
         </button>
       </div>
-
-      {assignments.length > 0 && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <input
-            type="text"
-            placeholder="Filter assignments..."
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            className="input filter-input"
-            style={{ maxWidth: '400px' }}
-          />
-        </div>
-      )}
 
       {assignments.length === 0 ? (
         <div className="empty-state">
