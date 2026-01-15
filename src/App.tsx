@@ -158,6 +158,7 @@ function App() {
       items
     };
     updateCurrentClass({ assignments: [...assignments, newAssignment] });
+    setSelectedAssignmentId(newAssignment.id);
   };
 
   const handleDeleteAssignment = (id: string) => {
