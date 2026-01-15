@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { GradeItem } from '../types';
 import { generateId } from '../utils';
 
@@ -13,9 +13,27 @@ export function AddAssignmentModal({ onAddAssignment, onClose }: AddAssignmentMo
   const [items, setItems] = useState<Array<{ name: string; maxPoints: string }>>([
     { name: '', maxPoints: '' }
   ]);
+  const [focusNewItem, setFocusNewItem] = useState(false);
+  const itemNameRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (focusNewItem && itemNameRefs.current.length > 0) {
+      const lastInput = itemNameRefs.current[itemNameRefs.current.length - 1];
+      lastInput?.focus();
+      setFocusNewItem(false);
+    }
+  }, [items, focusNewItem]);
 
   const handleAddItem = () => {
     setItems([...items, { name: '', maxPoints: '' }]);
+    setFocusNewItem(true);
+  };
+
+  const handleLastItemTab = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'Tab' && !e.shiftKey && index === items.length - 1) {
+      e.preventDefault();
+      handleAddItem();
+    }
   };
 
   const handleRemoveItem = (index: number) => {
@@ -98,6 +116,7 @@ export function AddAssignmentModal({ onAddAssignment, onClose }: AddAssignmentMo
                     onChange={(e) => handleItemChange(index, 'name', e.target.value)}
                     placeholder="Item name (e.g., Question 1, Essay, Rubric)"
                     className="input"
+                    ref={(el) => { itemNameRefs.current[index] = el; }}
                   />
                   <input
                     type="number"
@@ -107,6 +126,7 @@ export function AddAssignmentModal({ onAddAssignment, onClose }: AddAssignmentMo
                     className="input small"
                     min="0"
                     step="0.01"
+                    onKeyDown={(e) => handleLastItemTab(e, index)}
                   />
                   {items.length > 1 && (
                     <button type="button" onClick={() => handleRemoveItem(index)} className="delete-btn small">
