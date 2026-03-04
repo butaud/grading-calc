@@ -104,7 +104,7 @@ export function GradeEntry({ students, assignments, grades, onUpdateGrade }: Gra
                           className="grade-input"
                           min="0"
                           max={item.maxPoints}
-                          step="0.01"
+                          step="0.5"
                         />
                       </td>
                     ))}

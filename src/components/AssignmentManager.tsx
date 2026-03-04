@@ -82,7 +82,7 @@ export function AssignmentManager({ assignments, onAddAssignment, onDeleteAssign
                 placeholder="Max points"
                 className="input small"
                 min="0"
-                step="0.01"
+                step="1"
               />
               {items.length > 1 && (
                 <button type="button" onClick={() => handleRemoveItem(index)} className="delete-btn">

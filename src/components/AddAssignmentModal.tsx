@@ -125,7 +125,7 @@ export function AddAssignmentModal({ onAddAssignment, onClose }: AddAssignmentMo
                     placeholder="Max points"
                     className="input small"
                     min="0"
-                    step="0.01"
+                    step="1"
                     onKeyDown={(e) => handleLastItemTab(e, index)}
                   />
                   {items.length > 1 && (

@@ -527,7 +527,7 @@ export function AssignmentDetail({
                     placeholder="Max points"
                     className="input small"
                     min="0"
-                    step="0.01"
+                    step="1"
                   />
                   <button
                     type="button"
@@ -679,7 +679,7 @@ export function AssignmentDetail({
                               className="grade-input"
                               min="0"
                               max={item.maxPoints}
-                              step="0.01"
+                              step="0.5"
                             />
                           </td>
                         );
