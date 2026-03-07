@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Class, LetterGrade } from './types';
 import { runMigrations, CURRENT_VERSION, type AppData } from './migrations';
 import { generateId } from './utils';
 
 const APP_DATA_KEY = 'grading-calc-data';
+const MAX_HISTORY = 50;
 
 export function useAppData() {
   const [data, setData] = useState<AppData>(() => {
@@ -63,6 +64,9 @@ export function useAppData() {
     };
   });
 
+  const pastRef = useRef<AppData[]>([]);
+  const futureRef = useRef<AppData[]>([]);
+
   // Save to localStorage whenever data changes
   useEffect(() => {
     try {
@@ -71,6 +75,28 @@ export function useAppData() {
       console.error('Error saving data to localStorage:', error);
     }
   }, [data]);
+
+  const pushHistory = (snapshot?: AppData) => {
+    const stateToSave = snapshot ?? data;
+    pastRef.current = [...pastRef.current.slice(-(MAX_HISTORY - 1)), stateToSave];
+    futureRef.current = [];
+  };
+
+  const undo = () => {
+    if (pastRef.current.length === 0) return;
+    const prev = pastRef.current[pastRef.current.length - 1];
+    futureRef.current = [...futureRef.current, data];
+    pastRef.current = pastRef.current.slice(0, -1);
+    setData(prev);
+  };
+
+  const redo = () => {
+    if (futureRef.current.length === 0) return;
+    const next = futureRef.current[futureRef.current.length - 1];
+    pastRef.current = [...pastRef.current, data];
+    futureRef.current = futureRef.current.slice(0, -1);
+    setData(next);
+  };
 
   const setClasses = (classes: Class[]) => {
     setData(prev => ({ ...prev, classes }));
@@ -94,12 +120,16 @@ export function useAppData() {
   };
 
   return {
+    data,
     classes: data.classes,
     letterGrades: data.letterGrades,
     version: data.version,
     setClasses,
     updateClass,
     setLetterGrades,
-    importData
+    importData,
+    pushHistory,
+    undo,
+    redo,
   };
 }

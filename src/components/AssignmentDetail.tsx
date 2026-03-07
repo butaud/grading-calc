@@ -12,6 +12,8 @@ interface AssignmentDetailProps {
   onUpdateAssignment: (assignment: Assignment, deletedItemIds: string[]) => void;
   onBack: () => void;
   onDelete: () => void;
+  onGradeFocus?: () => void;
+  onGradeBlur?: () => void;
 }
 
 export function AssignmentDetail({
@@ -23,6 +25,8 @@ export function AssignmentDetail({
   onUpdateAssignment,
   onBack,
   onDelete,
+  onGradeFocus,
+  onGradeBlur,
 }: AssignmentDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(assignment.name);
@@ -674,6 +678,8 @@ export function AssignmentDetail({
                               value={grade ?? ''}
                               onChange={(e) => handleGradeChange(student.id, item.id, e.target.value)}
                               onKeyDown={(e) => handleKeyDown(e, studentIndex, itemIndex)}
+                              onFocus={onGradeFocus}
+                              onBlur={onGradeBlur}
                               data-student-index={studentIndex}
                               data-item-index={itemIndex}
                               className="grade-input"

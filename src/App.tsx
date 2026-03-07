@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Student, Assignment, Grade, GradeItem } from './types';
 import { useAppData } from './useAppData';
 import { generateId } from './utils';
@@ -13,13 +13,17 @@ import './App.css';
 
 function App() {
   const {
+    data,
     classes,
     letterGrades,
     version,
     setClasses,
     updateClass,
     setLetterGrades,
-    importData
+    importData,
+    pushHistory,
+    undo,
+    redo,
   } = useAppData();
 
   const [selectedClassId, setSelectedClassId] = useState<string>(() => {
@@ -129,7 +133,38 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [assignments]);
 
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      } else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
+
+  // Grade field undo: snapshot on focus, push to history on blur if changed
+  const gradeSnapshotRef = useRef<typeof data | null>(null);
+
+  const handleGradeFocus = () => {
+    gradeSnapshotRef.current = data;
+  };
+
+  const handleGradeBlur = () => {
+    if (gradeSnapshotRef.current !== null && gradeSnapshotRef.current !== data) {
+      pushHistory(gradeSnapshotRef.current);
+    }
+    gradeSnapshotRef.current = null;
+  };
+
   const handleAddStudent = (name: string) => {
+    pushHistory();
     const newStudent: Student = {
       id: generateId(),
       name
@@ -138,6 +173,7 @@ function App() {
   };
 
   const handleDeleteStudent = (id: string) => {
+    pushHistory();
     updateCurrentClass({
       students: students.filter((s) => s.id !== id),
       grades: grades.filter((g) => g.studentId !== id)
@@ -145,12 +181,14 @@ function App() {
   };
 
   const handleRenameStudent = (id: string, newName: string) => {
+    pushHistory();
     updateCurrentClass({
       students: students.map(s => s.id === id ? { ...s, name: newName } : s)
     });
   };
 
   const handleAddAssignment = (name: string, date: string, items: GradeItem[]) => {
+    pushHistory();
     const newAssignment: Assignment = {
       id: generateId(),
       name,
@@ -163,6 +201,7 @@ function App() {
 
   const handleDeleteAssignment = (id: string) => {
     if (confirm('Are you sure you want to delete this assignment? All grades for this assignment will be lost.')) {
+      pushHistory();
       updateCurrentClass({
         assignments: assignments.filter((a) => a.id !== id),
         grades: grades.filter((g) => g.assignmentId !== id)
@@ -213,6 +252,7 @@ function App() {
   };
 
   const handleUpdateAssignment = (updatedAssignment: Assignment, deletedItemIds: string[]) => {
+    pushHistory();
     const updatedAssignments = assignments.map(a => a.id === updatedAssignment.id ? updatedAssignment : a);
 
     if (deletedItemIds.length > 0) {
@@ -235,6 +275,7 @@ function App() {
   const handleAddClass = () => {
     const name = prompt('Enter a name for the new class:');
     if (name && name.trim()) {
+      pushHistory();
       const newClass = {
         id: generateId(),
         name: name.trim(),
@@ -253,6 +294,7 @@ function App() {
 
     const newName = prompt('Enter a new name for this class:', cls.name);
     if (newName && newName.trim() && newName !== cls.name) {
+      pushHistory();
       updateClass(classId, { ...cls, name: newName.trim() });
     }
   };
@@ -264,6 +306,7 @@ function App() {
     }
 
     if (confirm('Are you sure you want to delete this class? All students, assignments, and grades in this class will be lost.')) {
+      pushHistory();
       const updatedClasses = classes.filter(c => c.id !== classId);
       setClasses(updatedClasses);
 
@@ -274,11 +317,12 @@ function App() {
     }
   };
 
-  const handleImportData = (data: any) => {
-    importData(data);
+  const handleImportData = (importedData: any) => {
+    pushHistory();
+    importData(importedData);
     // After import, select the first class from the imported data
     // Need to run migrations to get the actual classes
-    const migrated = runMigrations(data);
+    const migrated = runMigrations(importedData);
     if (migrated.classes && migrated.classes.length > 0) {
       setSelectedClassId(migrated.classes[0].id);
     }
@@ -318,6 +362,8 @@ function App() {
             onUpdateAssignment={handleUpdateAssignment}
             onBack={() => setSelectedAssignmentId(null)}
             onDelete={() => handleDeleteAssignment(selectedAssignment.id)}
+            onGradeFocus={handleGradeFocus}
+            onGradeBlur={handleGradeBlur}
           />
         ) : (
           <>
@@ -366,7 +412,7 @@ function App() {
           classes={classes}
           letterGrades={letterGrades}
           version={version}
-          onUpdateLetterGrades={setLetterGrades}
+          onUpdateLetterGrades={(lg) => { pushHistory(); setLetterGrades(lg); }}
           onImportData={handleImportData}
           onClose={() => setShowSettings(false)}
         />
