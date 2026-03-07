@@ -63,7 +63,7 @@ export function AssignmentDetail({
       return;
     }
 
-    const validItems = editedItems.filter(item => item.name.trim() && item.maxPoints > 0);
+    const validItems = editedItems.filter(item => item.name.trim() && !Number.isNaN(item.maxPoints) && item.maxPoints >= 0);
     if (validItems.length === 0) {
       alert('Assignment must have at least one valid item');
       return;
@@ -145,7 +145,7 @@ export function AssignmentDetail({
   };
 
   const handleAddItem = () => {
-    setEditedItems([...editedItems, { id: generateId(), name: '', maxPoints: 0 }]);
+    setEditedItems([...editedItems, { id: generateId(), name: '', maxPoints: NaN }]);
   };
 
   const handleRemoveItem = (index: number) => {
@@ -526,7 +526,7 @@ export function AssignmentDetail({
                   />
                   <input
                     type="number"
-                    value={item.maxPoints || ''}
+                    value={Number.isNaN(item.maxPoints) ? '' : item.maxPoints}
                     onChange={(e) => handleItemChange(index, 'maxPoints', e.target.value)}
                     placeholder="Max points"
                     className="input small"
