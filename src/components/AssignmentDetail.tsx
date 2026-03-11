@@ -237,6 +237,7 @@ export function AssignmentDetail({
     if (nextInput) {
       nextInput.focus();
       nextInput.select();
+      (nextInput.closest('td') ?? nextInput).scrollIntoView({ block: 'nearest', inline: 'nearest' });
     }
   };
 
