@@ -708,7 +708,7 @@ export function AssignmentDetail({
                             className="note-btn"
                             onClick={() => openNoteDialog(student.id)}
                             title={getNote(student.id) ? 'Edit note' : 'Add note'}
-                            style={{ opacity: getNote(student.id) ? 1 : 0.5 }}
+                            style={{ opacity: getNote(student.id) ? 1 : 0.6 }}
                           >
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <rect x="1.5" y="0.5" width="9" height="12" rx="1" stroke="currentColor" strokeWidth="1.2"/>
