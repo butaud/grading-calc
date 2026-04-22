@@ -9,6 +9,7 @@ interface AssignmentDetailProps {
   grades: Grade[];
   letterGrades: LetterGrade[];
   onUpdateGrade: (studentId: string, assignmentId: string, itemId: string, points: number | null) => void;
+  onUpdateNote: (studentId: string, assignmentId: string, note: string) => void;
   onUpdateAssignment: (assignment: Assignment, deletedItemIds: string[]) => void;
   onBack: () => void;
   onDelete: () => void;
@@ -22,6 +23,7 @@ export function AssignmentDetail({
   grades,
   letterGrades,
   onUpdateGrade,
+  onUpdateNote,
   onUpdateAssignment,
   onBack,
   onDelete,
@@ -29,6 +31,8 @@ export function AssignmentDetail({
   onGradeBlur,
 }: AssignmentDetailProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [noteStudentId, setNoteStudentId] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState('');
   const [editedName, setEditedName] = useState(assignment.name);
   const [editedDate, setEditedDate] = useState(assignment.date);
   const [editedItems, setEditedItems] = useState<GradeItem[]>(assignment.items);
@@ -128,7 +132,8 @@ export function AssignmentDetail({
           total,
           maxPossible,
           percentage,
-          letterGrade
+          letterGrade,
+          note: getNote(student.id) || undefined,
         };
       });
 
@@ -183,6 +188,19 @@ export function AssignmentDetail({
   const getGrade = (studentId: string, itemId: string): number | undefined => {
     const grade = grades.find((g) => g.studentId === studentId && g.assignmentId === assignment.id);
     return grade?.itemGrades[itemId];
+  };
+
+  const getNote = (studentId: string): string =>
+    grades.find((g) => g.studentId === studentId && g.assignmentId === assignment.id)?.note ?? '';
+
+  const openNoteDialog = (studentId: string) => {
+    setNoteText(getNote(studentId));
+    setNoteStudentId(studentId);
+  };
+
+  const saveNote = () => {
+    if (noteStudentId !== null) onUpdateNote(noteStudentId, assignment.id, noteText);
+    setNoteStudentId(null);
   };
 
   const handleGradeChange = (studentId: string, itemId: string, value: string) => {
@@ -551,6 +569,29 @@ export function AssignmentDetail({
         </div>
       )}
 
+      {noteStudentId !== null && (
+        <div className="note-overlay" onClick={() => setNoteStudentId(null)}>
+          <div className="note-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="note-dialog-header">
+              <h3>Note — {students.find((s) => s.id === noteStudentId)?.name}</h3>
+              <button className="note-close-btn" onClick={() => setNoteStudentId(null)}>✕</button>
+            </div>
+            <textarea
+              className="note-textarea"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Add a note about this student's performance…"
+              rows={6}
+              autoFocus
+            />
+            <div className="note-dialog-actions">
+              <button className="primary-btn" onClick={saveNote}>Save</button>
+              <button className="secondary-btn" onClick={() => setNoteStudentId(null)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!isEditing && <div className="detail-sections">
         <section className="grades-section">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' }}>
@@ -660,7 +701,24 @@ export function AssignmentDetail({
 
                   return (
                     <tr key={student.id}>
-                      <td className="sticky-name-col">{student.name}</td>
+                      <td className="sticky-name-col">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <span>{student.name}</span>
+                          <button
+                            className="note-btn"
+                            onClick={() => openNoteDialog(student.id)}
+                            title={getNote(student.id) ? 'Edit note' : 'Add note'}
+                            style={{ opacity: getNote(student.id) ? 1 : 0.5 }}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <rect x="1.5" y="0.5" width="9" height="12" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+                              <line x1="4" y1="4" x2="8" y2="4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                              <line x1="4" y1="6.5" x2="8" y2="6.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                              <line x1="4" y1="9" x2="6.5" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
                       {assignment.items.map((item, itemIndex) => {
                         const grade = getGrade(student.id, item.id);
                         const itemPercentage = grade != null && item.maxPoints > 0 ? (grade / item.maxPoints) * 100 : null;

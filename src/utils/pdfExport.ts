@@ -13,6 +13,7 @@ export interface StudentPDFData {
   maxPossible: number;
   percentage: number;
   letterGrade: string | null;
+  note?: string;
 }
 
 export function generateAssignmentPDF(
@@ -102,6 +103,16 @@ export function generateAssignmentPDF(
           15,
           finalY
         );
+      }
+
+      if (student.note) {
+        const noteY = finalY + 12;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Notes:', 15, noteY);
+        doc.setFont('helvetica', 'normal');
+        const splitNote = doc.splitTextToSize(student.note, 175);
+        doc.text(splitNote, 15, noteY + 6);
       }
     } else {
       // No grades entered

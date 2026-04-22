@@ -25,6 +25,7 @@ export interface Grade {
   studentId: string;
   assignmentId: string;
   itemGrades: Record<string, number>;
+  note?: string;
 }
 
 export interface Class {

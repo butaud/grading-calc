@@ -251,6 +251,23 @@ function App() {
     updateCurrentClass({ grades: updatedGrades });
   };
 
+  const handleUpdateNote = (studentId: string, assignmentId: string, note: string) => {
+    const existingGradeIndex = grades.findIndex(
+      (g) => g.studentId === studentId && g.assignmentId === assignmentId
+    );
+    let updatedGrades: Grade[];
+    if (existingGradeIndex >= 0) {
+      updatedGrades = [...grades];
+      updatedGrades[existingGradeIndex] = {
+        ...updatedGrades[existingGradeIndex],
+        note: note || undefined,
+      };
+    } else {
+      updatedGrades = [...grades, { studentId, assignmentId, itemGrades: {}, note: note || undefined }];
+    }
+    updateCurrentClass({ grades: updatedGrades });
+  };
+
   const handleUpdateAssignment = (updatedAssignment: Assignment, deletedItemIds: string[]) => {
     pushHistory();
     const updatedAssignments = assignments.map(a => a.id === updatedAssignment.id ? updatedAssignment : a);
@@ -359,6 +376,7 @@ function App() {
             grades={grades}
             letterGrades={letterGrades}
             onUpdateGrade={handleUpdateGrade}
+            onUpdateNote={handleUpdateNote}
             onUpdateAssignment={handleUpdateAssignment}
             onBack={() => setSelectedAssignmentId(null)}
             onDelete={() => handleDeleteAssignment(selectedAssignment.id)}
