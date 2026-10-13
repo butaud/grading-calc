@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Student, Assignment, Grade } from '../types';
+import { GradeInput } from './GradeInput';
 
 interface GradeEntryProps {
   students: Student[];
@@ -14,13 +15,6 @@ export function GradeEntry({ students, assignments, grades, onUpdateGrade }: Gra
   const getGrade = (studentId: string, assignmentId: string, itemId: string): number => {
     const grade = grades.find((g) => g.studentId === studentId && g.assignmentId === assignmentId);
     return grade?.itemGrades[itemId] ?? 0;
-  };
-
-  const handleGradeChange = (studentId: string, assignmentId: string, itemId: string, value: string) => {
-    const points = value === '' ? 0 : Number(value);
-    if (!isNaN(points)) {
-      onUpdateGrade(studentId, assignmentId, itemId, points);
-    }
   };
 
   const selectedAssignmentData = assignments.find((a) => a.id === selectedAssignment);
@@ -95,16 +89,12 @@ export function GradeEntry({ students, assignments, grades, onUpdateGrade }: Gra
                     <td>{student.name}</td>
                     {selectedAssignmentData.items.map((item) => (
                       <td key={item.id}>
-                        <input
-                          type="number"
-                          value={getGrade(student.id, selectedAssignmentData.id, item.id) || ''}
-                          onChange={(e) =>
-                            handleGradeChange(student.id, selectedAssignmentData.id, item.id, e.target.value)
+                        <GradeInput
+                          value={getGrade(student.id, selectedAssignmentData.id, item.id) || null}
+                          onChange={(points) =>
+                            onUpdateGrade(student.id, selectedAssignmentData.id, item.id, points ?? 0)
                           }
                           className="grade-input"
-                          min="0"
-                          max={item.maxPoints}
-                          step="0.5"
                         />
                       </td>
                     ))}

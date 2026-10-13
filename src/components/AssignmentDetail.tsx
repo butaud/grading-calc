@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Student, Assignment, Grade, GradeItem, LetterGrade } from '../types';
 import { generateId, getLetterGrade, getLetterGradeColor, getLetterGradeColorWithAlpha } from '../utils';
 import { generateAssignmentPDF, type StudentPDFData } from '../utils/pdfExport';
+import { GradeInput } from './GradeInput';
 
 interface AssignmentDetailProps {
   assignment: Assignment;
@@ -201,17 +202,6 @@ export function AssignmentDetail({
   const saveNote = () => {
     if (noteStudentId !== null) onUpdateNote(noteStudentId, assignment.id, noteText);
     setNoteStudentId(null);
-  };
-
-  const handleGradeChange = (studentId: string, itemId: string, value: string) => {
-    if (value === '') {
-      onUpdateGrade(studentId, assignment.id, itemId, null);
-    } else {
-      const points = Number(value);
-      if (!isNaN(points)) {
-        onUpdateGrade(studentId, assignment.id, itemId, points);
-      }
-    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, studentIndex: number, itemIndex: number) => {
@@ -732,19 +722,15 @@ export function AssignmentDetail({
                               backgroundColor: bgColor || undefined
                             }}
                           >
-                            <input
-                              type="number"
-                              value={grade ?? ''}
-                              onChange={(e) => handleGradeChange(student.id, item.id, e.target.value)}
+                            <GradeInput
+                              value={grade}
+                              onChange={(points) => onUpdateGrade(student.id, assignment.id, item.id, points)}
                               onKeyDown={(e) => handleKeyDown(e, studentIndex, itemIndex)}
                               onFocus={onGradeFocus}
                               onBlur={onGradeBlur}
                               data-student-index={studentIndex}
                               data-item-index={itemIndex}
                               className="grade-input"
-                              min="0"
-                              max={item.maxPoints}
-                              step="0.5"
                             />
                           </td>
                         );
