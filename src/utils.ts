@@ -1,4 +1,4 @@
-import type { LetterGrade } from './types';
+import type { LetterGrade, Penalty } from './types';
 
 export function generateId(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -61,4 +61,11 @@ export function getLetterGradeColorWithAlpha(letterGrade: string | null, letterG
   const hue = 120 - (position * 120); // 120 (green) at top, 0 (red) at bottom
 
   return `hsla(${hue}, 70%, 50%, ${alpha})`;
+}
+
+export function getPenaltyPoints(penalty: Penalty | undefined, maxPossible: number, earned: number): number {
+  if (!penalty || !(penalty.value > 0)) return 0;
+  if (penalty.type === 'percent') return (penalty.value / 100) * maxPossible;
+  if (penalty.type === 'percent-earned') return (penalty.value / 100) * earned;
+  return penalty.value;
 }

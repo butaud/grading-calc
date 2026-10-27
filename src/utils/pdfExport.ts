@@ -11,6 +11,8 @@ export interface StudentPDFData {
   }[];
   total: number;
   maxPossible: number;
+  penalty?: { points: number; reason?: string };
+  finalTotal: number;
   percentage: number;
   letterGrade: string | null;
   note?: string;
@@ -55,7 +57,21 @@ export function generateAssignmentPDF(
           'Total',
           formatNumber(student.total),
           formatNumber(student.maxPossible)
-        ]
+        ],
+        ...(student.penalty
+          ? [
+              [
+                student.penalty.reason ? `Penalty (${student.penalty.reason})` : 'Penalty',
+                `-${formatNumber(student.penalty.points)}`,
+                ''
+              ],
+              [
+                'Total (with penalty)',
+                formatNumber(student.finalTotal),
+                formatNumber(student.maxPossible)
+              ]
+            ]
+          : [])
       ];
 
       autoTable(doc, {
@@ -78,8 +94,9 @@ export function generateAssignmentPDF(
           2: { cellWidth: 30, halign: 'right' }
         },
         didParseCell: function(data) {
-          // Make the last row (total) bold
-          if (data.section === 'body' && data.row.index === tableBody.length - 1) {
+          // Make total rows bold (the last row, and the pre-penalty total)
+          const totalRows = student.penalty ? [tableBody.length - 3, tableBody.length - 1] : [tableBody.length - 1];
+          if (data.section === 'body' && totalRows.includes(data.row.index)) {
             data.cell.styles.fontStyle = 'bold';
           }
         }

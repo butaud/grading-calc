@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { Student, Assignment, Grade, GradeItem } from './types';
+import type { Student, Assignment, Grade, GradeItem, Penalty } from './types';
 import { useAppData } from './useAppData';
 import { generateId } from './utils';
 import { runMigrations } from './migrations';
@@ -268,6 +268,21 @@ function App() {
     updateCurrentClass({ grades: updatedGrades });
   };
 
+  const handleUpdatePenalty = (studentId: string, assignmentId: string, penalty: Penalty | undefined) => {
+    pushHistory();
+    const existingGradeIndex = grades.findIndex(
+      (g) => g.studentId === studentId && g.assignmentId === assignmentId
+    );
+    let updatedGrades: Grade[];
+    if (existingGradeIndex >= 0) {
+      updatedGrades = [...grades];
+      updatedGrades[existingGradeIndex] = { ...updatedGrades[existingGradeIndex], penalty };
+    } else {
+      updatedGrades = [...grades, { studentId, assignmentId, itemGrades: {}, penalty }];
+    }
+    updateCurrentClass({ grades: updatedGrades });
+  };
+
   const handleUpdateAssignment = (updatedAssignment: Assignment, deletedItemIds: string[]) => {
     pushHistory();
     const updatedAssignments = assignments.map(a => a.id === updatedAssignment.id ? updatedAssignment : a);
@@ -377,6 +392,7 @@ function App() {
             letterGrades={letterGrades}
             onUpdateGrade={handleUpdateGrade}
             onUpdateNote={handleUpdateNote}
+            onUpdatePenalty={handleUpdatePenalty}
             onUpdateAssignment={handleUpdateAssignment}
             onBack={() => setSelectedAssignmentId(null)}
             onDelete={() => handleDeleteAssignment(selectedAssignment.id)}

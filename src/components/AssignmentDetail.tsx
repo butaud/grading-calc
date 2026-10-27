@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Student, Assignment, Grade, GradeItem, LetterGrade } from '../types';
-import { generateId, getLetterGrade, getLetterGradeColor, getLetterGradeColorWithAlpha } from '../utils';
+import type { Student, Assignment, Grade, GradeItem, LetterGrade, Penalty } from '../types';
+import { generateId, getLetterGrade, getLetterGradeColor, getLetterGradeColorWithAlpha, getPenaltyPoints } from '../utils';
 import { generateAssignmentPDF, type StudentPDFData } from '../utils/pdfExport';
 import { GradeInput } from './GradeInput';
 
@@ -11,6 +11,7 @@ interface AssignmentDetailProps {
   letterGrades: LetterGrade[];
   onUpdateGrade: (studentId: string, assignmentId: string, itemId: string, points: number | null) => void;
   onUpdateNote: (studentId: string, assignmentId: string, note: string) => void;
+  onUpdatePenalty: (studentId: string, assignmentId: string, penalty: Penalty | undefined) => void;
   onUpdateAssignment: (assignment: Assignment, deletedItemIds: string[]) => void;
   onBack: () => void;
   onDelete: () => void;
@@ -25,6 +26,7 @@ export function AssignmentDetail({
   letterGrades,
   onUpdateGrade,
   onUpdateNote,
+  onUpdatePenalty,
   onUpdateAssignment,
   onBack,
   onDelete,
@@ -34,6 +36,10 @@ export function AssignmentDetail({
   const [isEditing, setIsEditing] = useState(false);
   const [noteStudentId, setNoteStudentId] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
+  const [penaltyStudentId, setPenaltyStudentId] = useState<string | null>(null);
+  const [penaltyType, setPenaltyType] = useState<Penalty['type']>('percent');
+  const [penaltyValue, setPenaltyValue] = useState('');
+  const [penaltyReason, setPenaltyReason] = useState('');
   const [editedName, setEditedName] = useState(assignment.name);
   const [editedDate, setEditedDate] = useState(assignment.date);
   const [editedItems, setEditedItems] = useState<GradeItem[]>(assignment.items);
@@ -124,7 +130,8 @@ export function AssignmentDetail({
           })
           .filter((item): item is NonNullable<typeof item> => item !== null);
 
-        const percentage = maxPossible > 0 ? (total / maxPossible) * 100 : 0;
+        const penalty = getPenalty(student.id);
+        const { penaltyPoints, finalTotal, percentage } = getPenalizedResult(student.id, total, maxPossible);
         const letterGrade = getLetterGrade(percentage, letterGrades);
 
         return {
@@ -132,6 +139,8 @@ export function AssignmentDetail({
           items: itemsWithGrades,
           total,
           maxPossible,
+          penalty: penaltyPoints > 0 ? { points: penaltyPoints, reason: penalty?.reason } : undefined,
+          finalTotal,
           percentage,
           letterGrade,
           note: getNote(student.id) || undefined,
@@ -202,6 +211,85 @@ export function AssignmentDetail({
   const saveNote = () => {
     if (noteStudentId !== null) onUpdateNote(noteStudentId, assignment.id, noteText);
     setNoteStudentId(null);
+  };
+
+  const getPenalty = (studentId: string): Penalty | undefined =>
+    grades.find((g) => g.studentId === studentId && g.assignmentId === assignment.id)?.penalty;
+
+  const hasPenalties = students.some((s) => (getPenalty(s.id)?.value ?? 0) > 0);
+
+  // Total after penalty for a student (never below 0)
+  const getPenalizedResult = (studentId: string, total: number, studentMax: number) => {
+    const penaltyPoints = Math.min(getPenaltyPoints(getPenalty(studentId), studentMax, total), total);
+    const finalTotal = total - penaltyPoints;
+    const percentage = studentMax > 0 ? (finalTotal / studentMax) * 100 : 0;
+    return { penaltyPoints, finalTotal, percentage };
+  };
+
+  const getStudentTotals = (studentId: string) => {
+    let total = 0;
+    let studentMax = 0;
+    assignment.items.forEach((item) => {
+      const points = getGrade(studentId, item.id);
+      if (points != null) {
+        total += points;
+        studentMax += item.maxPoints;
+      }
+    });
+    return { total, studentMax };
+  };
+
+  const openPenaltyDialog = (studentId: string) => {
+    const existing = getPenalty(studentId);
+    setPenaltyType(existing?.type ?? 'percent');
+    setPenaltyValue(existing ? String(existing.value) : '');
+    setPenaltyReason(existing?.reason ?? '');
+    setPenaltyStudentId(studentId);
+  };
+
+  const savePenalty = () => {
+    if (penaltyStudentId === null) return;
+    const value = Number(penaltyValue);
+    const valid = penaltyValue.trim() !== '' && Number.isFinite(value) && value > 0;
+    onUpdatePenalty(
+      penaltyStudentId,
+      assignment.id,
+      valid ? { type: penaltyType, value, reason: penaltyReason.trim() || undefined } : undefined
+    );
+    setPenaltyStudentId(null);
+  };
+
+  const removePenalty = () => {
+    if (penaltyStudentId !== null) onUpdatePenalty(penaltyStudentId, assignment.id, undefined);
+    setPenaltyStudentId(null);
+  };
+
+  const renderPenalizedStat = (mode: 'avg' | 'median') => {
+    if (!hasPenalties) return null;
+    const percentages = students
+      .map((st) => {
+        const t = getStudentTotals(st.id);
+        return t.studentMax > 0 ? getPenalizedResult(st.id, t.total, t.studentMax).percentage : null;
+      })
+      .filter((v): v is number => v !== null)
+      .sort((a, b) => a - b);
+    const mid = Math.floor(percentages.length / 2);
+    let value = 0;
+    if (percentages.length > 0) {
+      if (mode === 'avg') value = percentages.reduce((a, b) => a + b, 0) / percentages.length;
+      else value = percentages.length % 2 === 0 ? (percentages[mid - 1] + percentages[mid]) / 2 : percentages[mid];
+    }
+    const letter = getLetterGrade(value, letterGrades);
+    return (
+      <td className="stats-cell stats-overall sticky-total-col">
+        {value.toFixed(1)}%
+        {letter && (
+          <span style={{ color: getLetterGradeColor(letter, letterGrades) || undefined }}>
+            {' '}({letter})
+          </span>
+        )}
+      </td>
+    );
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, studentIndex: number, itemIndex: number) => {
@@ -414,7 +502,7 @@ export function AssignmentDetail({
         }
       });
 
-      const percentage = studentMax > 0 ? (total / studentMax) * 100 : 0;
+      const { percentage } = getPenalizedResult(student.id, total, studentMax);
 
       return { student, percentage };
     });
@@ -582,6 +670,55 @@ export function AssignmentDetail({
         </div>
       )}
 
+      {penaltyStudentId !== null && (
+        <div className="note-overlay" onClick={() => setPenaltyStudentId(null)}>
+          <div className="note-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="note-dialog-header">
+              <h3>Penalty — {students.find((s) => s.id === penaltyStudentId)?.name}</h3>
+              <button className="note-close-btn" onClick={() => setPenaltyStudentId(null)}>✕</button>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <input
+                type="number"
+                className="input small"
+                value={penaltyValue}
+                onChange={(e) => setPenaltyValue(e.target.value)}
+                placeholder="Amount"
+                min="0"
+                step="any"
+                autoFocus
+                onKeyDown={(e) => { if (e.key === 'Enter') savePenalty(); }}
+              />
+              <select
+                className="input"
+                value={penaltyType}
+                onChange={(e) => setPenaltyType(e.target.value as Penalty['type'])}
+              >
+                <option value="percent">% of possible points</option>
+                <option value="percent-earned">% of earned points</option>
+                <option value="points">points</option>
+              </select>
+            </div>
+            <input
+              type="text"
+              className="input"
+              value={penaltyReason}
+              onChange={(e) => setPenaltyReason(e.target.value)}
+              placeholder="Reason (e.g. late submission)"
+              style={{ marginBottom: '0.75rem' }}
+              onKeyDown={(e) => { if (e.key === 'Enter') savePenalty(); }}
+            />
+            <div className="note-dialog-actions">
+              <button className="primary-btn" onClick={savePenalty}>Save</button>
+              <button className="secondary-btn" onClick={() => setPenaltyStudentId(null)}>Cancel</button>
+              {getPenalty(penaltyStudentId) && (
+                <button className="delete-btn" onClick={removePenalty}>Remove</button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {!isEditing && <div className="detail-sections">
         <section className="grades-section">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' }}>
@@ -666,11 +803,20 @@ export function AssignmentDetail({
                   ))}
                   <th
                     onClick={() => handleHeaderClick('score')}
-                    className="sortable-header sticky-total-col"
+                    className={`sortable-header${hasPenalties ? '' : ' sticky-total-col'}`}
                     style={{ cursor: 'pointer' }}
                   >
-                    Total {sortColumn === 'score' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    Total {!hasPenalties && sortColumn === 'score' && (sortDirection === 'asc' ? '↑' : '↓')}
                   </th>
+                  {hasPenalties && (
+                    <th
+                      onClick={() => handleHeaderClick('score')}
+                      className="sortable-header sticky-total-col"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Total (with penalty) {sortColumn === 'score' && (sortDirection === 'asc' ? '↑' : '↓')}
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -688,6 +834,9 @@ export function AssignmentDetail({
 
                   const percentage = studentMax > 0 ? (total / studentMax) * 100 : 0;
                   const letterGrade = getLetterGrade(percentage, letterGrades);
+                  const penalty = getPenalty(student.id);
+                  const penalized = getPenalizedResult(student.id, total, studentMax);
+                  const penalizedLetter = getLetterGrade(penalized.percentage, letterGrades);
 
                   return (
                     <tr key={student.id}>
@@ -705,6 +854,17 @@ export function AssignmentDetail({
                               <line x1="4" y1="4" x2="8" y2="4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
                               <line x1="4" y1="6.5" x2="8" y2="6.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
                               <line x1="4" y1="9" x2="6.5" y2="9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                            </svg>
+                          </button>
+                          <button
+                            className="note-btn"
+                            onClick={() => openPenaltyDialog(student.id)}
+                            title={penalty ? `Edit penalty${penalty.reason ? ` (${penalty.reason})` : ''}` : 'Add penalty'}
+                            style={{ opacity: penalty ? 1 : 0.6, color: penalty ? '#e5534b' : undefined }}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <circle cx="7" cy="7" r="5.8" stroke="currentColor" strokeWidth="1.2"/>
+                              <line x1="4" y1="7" x2="10" y2="7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
                             </svg>
                           </button>
                         </div>
@@ -735,7 +895,7 @@ export function AssignmentDetail({
                           </td>
                         );
                       })}
-                      <td className="total-cell sticky-total-col">
+                      <td className={`total-cell${hasPenalties ? '' : ' sticky-total-col'}`}>
                         {studentMax > 0 ? (
                           <>
                             {total.toFixed(2)} / {studentMax} ({percentage.toFixed(1)}%{letterGrade && (
@@ -748,6 +908,26 @@ export function AssignmentDetail({
                           <span style={{ color: '#888', fontStyle: 'italic' }}>No grades</span>
                         )}
                       </td>
+                      {hasPenalties && (
+                        <td className="total-cell sticky-total-col">
+                          {studentMax > 0 ? (
+                            <>
+                              {penalized.finalTotal.toFixed(2)} / {studentMax} ({penalized.percentage.toFixed(1)}%{penalizedLetter && (
+                                <span style={{ color: getLetterGradeColor(penalizedLetter, letterGrades) || undefined }}>
+                                  {' '}{penalizedLetter}
+                                </span>
+                              )})
+                              {penalized.penaltyPoints > 0 && (
+                                <div style={{ color: '#e5534b', fontSize: '0.8rem' }} title={penalty?.reason}>
+                                  −{Number(penalized.penaltyPoints.toFixed(2))} pts{penalty?.reason ? ` · ${penalty.reason}` : ''}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <span style={{ color: '#888', fontStyle: 'italic' }}>No grades</span>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -773,7 +953,7 @@ export function AssignmentDetail({
                       </td>
                     );
                   })}
-                  <td className="stats-cell stats-overall sticky-total-col">
+                  <td className={`stats-cell stats-overall${hasPenalties ? '' : ' sticky-total-col'}`}>
                     {calculatePercentage().toFixed(1)}%
                     {letterGrades.length > 0 && (() => {
                       const overallPercentage = calculatePercentage();
@@ -785,6 +965,7 @@ export function AssignmentDetail({
                       ) : '';
                     })()}
                   </td>
+                  {renderPenalizedStat('avg')}
                 </tr>
                 <tr className="stats-row">
                   <td className="stats-label sticky-name-col">Class Median</td>
@@ -806,7 +987,7 @@ export function AssignmentDetail({
                       </td>
                     );
                   })}
-                  <td className="stats-cell stats-overall sticky-total-col">
+                  <td className={`stats-cell stats-overall${hasPenalties ? '' : ' sticky-total-col'}`}>
                     {calculateMedianPercentage().toFixed(1)}%
                     {letterGrades.length > 0 && (() => {
                       const overallMedianPercentage = calculateMedianPercentage();
@@ -818,6 +999,7 @@ export function AssignmentDetail({
                       ) : '';
                     })()}
                   </td>
+                  {renderPenalizedStat('median')}
                 </tr>
               </tfoot>
             </table>

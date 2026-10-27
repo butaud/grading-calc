@@ -21,11 +21,18 @@ export interface Assignment {
   items: GradeItem[];
 }
 
+export interface Penalty {
+  type: 'points' | 'percent' | 'percent-earned'; // percent: of possible points; percent-earned: of the student's earned points
+  value: number;
+  reason?: string;
+}
+
 export interface Grade {
   studentId: string;
   assignmentId: string;
   itemGrades: Record<string, number>;
   note?: string;
+  penalty?: Penalty;
 }
 
 export interface Class {
